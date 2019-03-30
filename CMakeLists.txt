@@ -11,13 +11,16 @@ include_directories(./include)
 file(GLOB_RECURSE SOURCES "src/*.cpp")
 file(GLOB_RECURSE INCL_SOURCES "include/*.cpp")
 
-
-find_package(glfw3 3.2 REQUIRED)
 find_package(OpenGL REQUIRED)
+find_package(PkgConfig REQUIRED)
+pkg_search_module(GLFW required glfw3)
+include_directories(${GLFW_INCLUDE_DIRS})
 
+# defines passed to the compiler
 
-
-
+add_definitions(-DWINDOW_TITLE="GLFrontend")
+add_definitions(-DDEFAULT_SCREEN_HEIGHT=600)
+add_definitions(-DDEFAULT_SCREEN_WIDTH=800)
 
 
 # report a solution if OpenGL is not found
@@ -29,4 +32,4 @@ endif()
 add_executable (glfrontend ${SOURCES} ${INCL_SOURCES})
 
 target_include_directories(glfrontend PUBLIC ${OPENGL_INCLUDE_DIR})
-target_link_libraries(glfrontend glfw ${OPENGL_gl_LIBRARY})
+target_link_libraries(glfrontend glfw3 GL GLU glfw3 X11 Xxf86vm Xrandr pthread Xi dl Xcursor Xinerama rt m ${OPENGL_gl_LIBRARY} ${GLFW_LIBRARIES})
