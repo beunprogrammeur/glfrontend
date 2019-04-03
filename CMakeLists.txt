@@ -21,7 +21,8 @@ include_directories(${GLFW_INCLUDE_DIRS})
 add_definitions(-DWINDOW_TITLE="GLFrontend")
 add_definitions(-DDEFAULT_SCREEN_HEIGHT=600)
 add_definitions(-DDEFAULT_SCREEN_WIDTH=800)
-
+add_definitions(-DIMAGE_SHADER_VERTEX_FILE="./data/shaders/image.vert")
+add_definitions(-DIMAGE_SHADER_FRAGMENT_FILE="./data/shaders/image.frag")
 
 # report a solution if OpenGL is not found
 if(NOT OPENGL_FOUND)
@@ -29,7 +30,20 @@ if(NOT OPENGL_FOUND)
 endif()
 
 
+
+
+
 add_executable (glfrontend ${SOURCES} ${INCL_SOURCES})
 
 target_include_directories(glfrontend PUBLIC ${OPENGL_INCLUDE_DIR})
 target_link_libraries(glfrontend glfw3 GL GLU glfw3 X11 Xxf86vm Xrandr pthread Xi dl Xcursor Xinerama rt m ${OPENGL_gl_LIBRARY} ${GLFW_LIBRARIES})
+
+
+# copy data folder to build directory
+
+add_custom_command(
+	TARGET glfrontend POST_BUILD
+	COMMAND cp -ru ${CMAKE_SOURCE_DIR}/data ${CMAKE_CURRENT_BINARY_DIR}/.
+	COMMENT "copied/updated 'data' dir"
+)
+
