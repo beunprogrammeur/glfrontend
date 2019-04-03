@@ -12,8 +12,7 @@ namespace arcade
 Cabinet::Cabinet()
 	: m_window(nullptr)
     , m_imageRenderer()
-    , m_image1()
-    , m_image2()
+    , m_image()
 {
 }
 
@@ -89,8 +88,7 @@ bool Cabinet::initGL(const int argc, const char* argv[])
 bool Cabinet::initCabinet(const int argc, const char* argv[])
 {
     m_imageRenderer.loadShaders(IMAGE_SHADER_VERTEX_FILE, IMAGE_SHADER_FRAGMENT_FILE);
-    m_image1.load("./data/media/image1.png");
-    m_image2.load("./data/media/image2.jpg");
+    //m_image.load("./data/media/image1.png");
     
 	return true;
 }
@@ -112,7 +110,7 @@ void Cabinet::draw()
 		glClearColor(0.7f, 0.2f, 0.5f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT);
 		
-        m_imageRenderer.draw(m_image1);
+        //m_imageRenderer.draw(m_image);
 
 
 

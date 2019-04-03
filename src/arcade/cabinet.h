@@ -14,8 +14,7 @@ class Cabinet
 private:
 	GLFWwindow* m_window;
 	graphics::ImageRenderer m_imageRenderer;
-	graphics::Image m_image1;
-	graphics::Image m_image2;
+	graphics::Image m_image;
 
 protected:
 	virtual bool initGL(const int argc, const char* argv[]);
