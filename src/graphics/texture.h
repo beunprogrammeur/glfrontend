@@ -9,6 +9,8 @@ class Texture
 private:
 	unsigned int m_textureId;
 	bool m_isLoaded;
+	int m_width;
+	int m_height;
 
 public:
 	Texture();
@@ -19,8 +21,10 @@ public:
 	void unload();
 	void setActive();
 	
-	inline bool isLoaded() const { return m_isLoaded; }
 	inline unsigned int id() const { return m_textureId; }
+	inline bool isLoaded()   const { return m_isLoaded;  }
+	inline int height()      const { return m_height;    }
+	inline int width()       const { return m_width;     }
 
 };
 	

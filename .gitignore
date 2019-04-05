@@ -1,3 +1,3 @@
 .vscode
-./data/media/*
-./build
+data/media/*
+build

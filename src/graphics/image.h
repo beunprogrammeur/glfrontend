@@ -20,7 +20,9 @@ public:
 
 private:
 	Texture m_texture;
-
+	unsigned int m_vbo;
+	unsigned int m_vao;
+	unsigned int m_ebo;
 public:
 	Image();
 	Image(const char* path);	

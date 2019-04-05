@@ -9,6 +9,9 @@
 namespace arcade
 {
 
+int Cabinet::kScreenHeight = 0;
+int Cabinet::kScreenWidth = 0;
+
 Cabinet::Cabinet()
 	: m_window(nullptr)
     , m_imageRenderer()
@@ -55,10 +58,14 @@ bool Cabinet::initGL(const int argc, const char* argv[])
         glfwWindowHint(GLFW_REFRESH_RATE, mode->refreshRate);
 
         m_window = glfwCreateWindow(mode->width, mode->height, WINDOW_TITLE, monitor, nullptr);
+        kScreenWidth  = mode->width;
+        kScreenHeight = mode->height;
     }
     else
     {
         m_window = glfwCreateWindow(DEFAULT_SCREEN_WIDTH, DEFAULT_SCREEN_HEIGHT, WINDOW_TITLE, nullptr, nullptr);
+        kScreenWidth  = DEFAULT_SCREEN_WIDTH;
+        kScreenHeight = DEFAULT_SCREEN_HEIGHT;
     }
     
     if(m_window == nullptr)
@@ -88,7 +95,7 @@ bool Cabinet::initGL(const int argc, const char* argv[])
 bool Cabinet::initCabinet(const int argc, const char* argv[])
 {
     m_imageRenderer.loadShaders(IMAGE_SHADER_VERTEX_FILE, IMAGE_SHADER_FRAGMENT_FILE);
-    //m_image.load("./data/media/image1.png");
+    m_image.load("./data/media/ebichu.png");
     
 	return true;
 }
@@ -110,7 +117,7 @@ void Cabinet::draw()
 		glClearColor(0.7f, 0.2f, 0.5f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT);
 		
-        //m_imageRenderer.draw(m_image);
+        m_imageRenderer.draw(m_image);
 
 
 

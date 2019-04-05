@@ -14,9 +14,6 @@ class ImageRenderer
 {
 private:
     ShaderProgram m_program;
-    unsigned int m_vbo;
-    unsigned int m_vao;
-    unsigned int m_ebo;
     /* data */
 public:
     ImageRenderer(/* args */);

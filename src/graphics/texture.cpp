@@ -39,21 +39,28 @@ void Texture::load(const char* path)
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-	int width = 0, height = 0, nChannels = 0;
+	int nChannels = 0;
 	
-	unsigned char* data = stbi_load(path, &width, &height, &nChannels, 0);
+	stbi_set_flip_vertically_on_load(true); 
+	unsigned char* data = stbi_load(path, &m_width, &m_height, &nChannels, 0);
 
 	unsigned int colorFlag = GL_RGB;
-	if(std::string(path).find(".png") != std::string::npos)
+	if(nChannels == 4)
 	{
 		colorFlag = GL_RGBA;
 	}
-
+	
 	if(data)
 	{
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, colorFlag, GL_UNSIGNED_BYTE, data);
+		glPixelStorei(GL_UNPACK_ALIGNMENT,   1);
+		glPixelStorei(GL_UNPACK_ROW_LENGTH,  0);
+		glPixelStorei(GL_UNPACK_SKIP_PIXELS, 0);
+		glPixelStorei(GL_UNPACK_SKIP_ROWS,   0);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, m_width, m_height, 0, colorFlag, GL_UNSIGNED_BYTE, data);
 		glGenerateMipmap(GL_TEXTURE_2D);
 	}
+
+
 
 	stbi_image_free(data);
 	

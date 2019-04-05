@@ -22,6 +22,8 @@ protected:
 	
 	virtual void handleInput();
 
+
+
 public:
 	Cabinet();
 	~Cabinet();
@@ -29,6 +31,9 @@ public:
 	bool init(const int argc, const char* argv[]);
 		
 	virtual void draw();
+
+	static int kScreenWidth;
+	static int kScreenHeight;
 };
 
 } /** namespace arcade **/
