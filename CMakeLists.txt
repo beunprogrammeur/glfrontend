@@ -23,6 +23,7 @@ add_definitions(-DDEFAULT_SCREEN_HEIGHT=600)
 add_definitions(-DDEFAULT_SCREEN_WIDTH=800)
 add_definitions(-DIMAGE_SHADER_VERTEX_FILE="./data/shaders/image.vert")
 add_definitions(-DIMAGE_SHADER_FRAGMENT_FILE="./data/shaders/image.frag")
+add_definitions(-DSETTINGS_PATH="./data/settings.ini")
 
 # report a solution if OpenGL is not found
 if(NOT OPENGL_FOUND)

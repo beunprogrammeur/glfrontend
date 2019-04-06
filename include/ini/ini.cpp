@@ -31,6 +31,8 @@ std::string Ini::get(std::string section, std::string key, std::string defaultOu
     auto sectionIter = m_content->find(section);
     if(sectionIter == m_content->end())
     {
+        // adding the value to the inifile if the entry doesn't exist
+        set(section, key, defaultOutput);
         return defaultOutput;
     }
 
@@ -38,6 +40,8 @@ std::string Ini::get(std::string section, std::string key, std::string defaultOu
     auto paramIter = sect.find(key);
     if(paramIter == sect.end())
     {
+        // adding the value to the inifile if the entry doesn't exist
+        set(section, key, defaultOutput);
         return defaultOutput;
     }
     else

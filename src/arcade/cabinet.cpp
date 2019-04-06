@@ -4,6 +4,7 @@
 #include <string.h>
 #include <string>
 
+#include "settings.h"
 
 
 namespace arcade
@@ -48,7 +49,7 @@ bool Cabinet::initGL(const int argc, const char* argv[])
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 	
 	// making it fullscreen, this mechanic needs improvement
-    if(argc >= 2 && strcmp(argv[1], "-fullscreen") == 0)
+    if(settings::screen::isFullScreen())
     {
         auto monitor = glfwGetPrimaryMonitor();
         const GLFWvidmode* mode = glfwGetVideoMode(monitor);
@@ -57,15 +58,15 @@ bool Cabinet::initGL(const int argc, const char* argv[])
         glfwWindowHint(GLFW_BLUE_BITS, mode->blueBits);
         glfwWindowHint(GLFW_REFRESH_RATE, mode->refreshRate);
 
-        m_window = glfwCreateWindow(mode->width, mode->height, WINDOW_TITLE, monitor, nullptr);
+        m_window = glfwCreateWindow(mode->width, mode->height, arcade::settings::program::title().c_str(), monitor, nullptr);
         kScreenWidth  = mode->width;
         kScreenHeight = mode->height;
     }
     else
     {
-        m_window = glfwCreateWindow(DEFAULT_SCREEN_WIDTH, DEFAULT_SCREEN_HEIGHT, WINDOW_TITLE, nullptr, nullptr);
-        kScreenWidth  = DEFAULT_SCREEN_WIDTH;
-        kScreenHeight = DEFAULT_SCREEN_HEIGHT;
+        m_window = glfwCreateWindow(arcade::settings::screen::width(), arcade::settings::screen::height(), arcade::settings::program::title().c_str(), nullptr, nullptr);
+        kScreenWidth  = arcade::settings::screen::width();
+        kScreenHeight = arcade::settings::screen::height();
     }
     
     if(m_window == nullptr)
