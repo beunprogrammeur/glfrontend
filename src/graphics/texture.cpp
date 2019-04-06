@@ -47,7 +47,7 @@ void Texture::load(const char* path)
 	unsigned int colorFlag = GL_RGB;
 	if(nChannels == 4)
 	{
-		colorFlag = GL_RGBA;
+		colorFlag = GL_RGBA; 
 	}
 	
 	if(data)

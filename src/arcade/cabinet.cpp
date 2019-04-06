@@ -111,12 +111,20 @@ void Cabinet::handleInput()
 
 void Cabinet::draw()
 {
+    float deg = 0.0f;
+
+    m_imageRenderer.scale(0.5);
+    float x = 0.0f;
+    float y = 0.0f;
+
 	while(!glfwWindowShouldClose(m_window))
 	{
 		handleInput();
 		glClearColor(0.7f, 0.2f, 0.5f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT);
 		
+        m_imageRenderer.rotateDegrees(deg+=0.1f);
+        m_imageRenderer.translate(x+=0.0001, y+=0.0000);
         m_imageRenderer.draw(m_image);
 
 

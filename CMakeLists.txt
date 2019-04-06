@@ -19,8 +19,8 @@ include_directories(${GLFW_INCLUDE_DIRS})
 # defines passed to the compiler
 
 add_definitions(-DWINDOW_TITLE="GLFrontend")
-add_definitions(-DDEFAULT_SCREEN_HEIGHT=900)
-add_definitions(-DDEFAULT_SCREEN_WIDTH=900)
+add_definitions(-DDEFAULT_SCREEN_HEIGHT=600)
+add_definitions(-DDEFAULT_SCREEN_WIDTH=800)
 add_definitions(-DIMAGE_SHADER_VERTEX_FILE="./data/shaders/image.vert")
 add_definitions(-DIMAGE_SHADER_FRAGMENT_FILE="./data/shaders/image.frag")
 
