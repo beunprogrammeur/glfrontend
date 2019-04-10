@@ -7,7 +7,7 @@ set(CMAKE_BUILD_TYPE Debug)
 
 # included source is found in the ./incude directory
 include_directories(./include)
-
+include_directories(./src)
 file(GLOB_RECURSE SOURCES "src/*.cpp")
 file(GLOB_RECURSE INCL_SOURCES "include/*.cpp")
 
@@ -43,7 +43,7 @@ target_link_libraries(glfrontend glfw3 GL GLU glfw3 X11 Xxf86vm Xrandr pthread X
 # copy data folder to build directory
 
 add_custom_command(
-	TARGET glfrontend POST_BUILD
+	TARGET glfrontend PRE_BUILD
 	COMMAND cp -ru ${CMAKE_SOURCE_DIR}/data ${CMAKE_CURRENT_BINARY_DIR}/.
 	COMMENT "copied/updated 'data' dir"
 )

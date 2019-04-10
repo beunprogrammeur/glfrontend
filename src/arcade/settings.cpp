@@ -1,7 +1,7 @@
 #include "settings.h"
 
 #include "ini/ini.h"
-#include <string>
+
 
 namespace arcade
 {
@@ -49,6 +49,11 @@ namespace screen
 
     int  height() { return   ini.get_int("screen", "height", 600); }
     void height(int value) { ini.set_int("screen", "height", value); }
+}
+
+namespace gaming
+{
+    std::string gameSystemsRootDir() { return ini.get("gaming","game_systems_root", "./data/systems/"); }
 }
 
 

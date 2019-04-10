@@ -110,7 +110,6 @@ Ini Ini::fromFile(std::string path)
 {
     std::ifstream file(path, std::ifstream::in);
     Ini ini;
-
     if(!file.good())
     {
         file.close();

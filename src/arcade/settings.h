@@ -27,6 +27,11 @@ namespace settings
         int height();
         void height(int value);
     }
+
+    namespace gaming
+    {
+        std::string gameSystemsRootDir();
+    }
 }
 
 
