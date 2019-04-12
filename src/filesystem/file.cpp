@@ -2,6 +2,7 @@
 #include <iostream>
 #include <sstream>
 #include <fstream>
+#include <dirent.h>
 
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>
@@ -46,6 +47,25 @@ bool openTexture(const std::string& path, graphics::textures::Texture2D& texture
     texture.generate(width, height, data, pixelFormat, pixelFormat);
 
     stbi_image_free(data);
+}
+
+void getSubFiles(const std::string& path, std::vector<std::string>& output)
+{
+    DIR* dir = opendir(path.c_str());
+    if(dir == nullptr)
+    {
+        return;
+    }
+
+    struct dirent* entry = readdir(dir);
+    while(entry != nullptr)
+    {
+        if(entry->d_type != DT_DIR)
+        {
+            output.push_back((path, entry->d_name));
+        }
+        entry = readdir(dir);
+    }
 }
 
 

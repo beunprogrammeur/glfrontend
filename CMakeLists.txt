@@ -44,7 +44,7 @@ target_link_libraries(glfrontend glfw3 GL GLU glfw3 X11 Xxf86vm Xrandr pthread X
 
 add_custom_command(
 	TARGET glfrontend PRE_BUILD
-	COMMAND cp -ru ${CMAKE_SOURCE_DIR}/data ${CMAKE_CURRENT_BINARY_DIR}/.
+	COMMAND cp -ru ${CMAKE_SOURCE_DIR}/data ${CMAKE_CURRENT_BINARY_DIR}/. 
 	COMMENT "copied/updated 'data' dir"
 )
 

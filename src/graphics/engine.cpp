@@ -4,6 +4,8 @@
 #include "filesystem/directory.h"
 #include "arcade/settings.h"
 
+#include <iostream>
+
 namespace graphics
 {
 
@@ -37,6 +39,16 @@ void Engine::init()
     m_renderer->shader().set("projection", projection);
 
     arcade::GameSystem::loadSystems(m_systems);
+
+    for(auto system : m_systems)
+    {
+        std::cout << "loaded system: " << system->friendlyName() << std::endl;
+    }
+
+
+    //m_systems[0]->loadGames();
+    //m_systems[0]->selectNextGame();
+    //m_systems[0]->runSelectedGame();
 }
 
 void Engine::draw()
