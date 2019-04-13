@@ -66,12 +66,12 @@ void GameSystem::loadGames()
     std::cout << "loaded " << m_games.size() << " games" << std::endl;
 }
 
-void GameSystem::runSelectedGame()
+int GameSystem::runSelectedGame()
 {
     if(m_selectedIndex > m_games.size() -1)
     {
         std::cerr << "error: " << __FUNCTION__ << ", selected index of game out of range" << std::endl;
-        return;
+        return -1;
     }
 
     // TODO: PCRE2 implementation? search and replace variables
@@ -86,16 +86,12 @@ void GameSystem::runSelectedGame()
     {
         std::cout << "emulator for " << friendlyName() << " not given."
                   << "see " << filesystem::path::concat(m_path, "config.ini") << std::endl;
-        return;
+        return -1;
     }
 
-
-    std::stringstream ss;
-    ss << emulatorPath();
-    ss << " ";
-    ss << filesystem::path::concat(romPath(), filesystem::path::escape(m_games[m_selectedIndex].filename()));
-    std::cout << "command: " << ss.str() << std::endl;
-    system(ss.str().c_str());
+    namespace fs = filesystem;
+    
+    return fs::file::execute(emulatorPath(), fs::path::concat(romPath(), m_games[m_selectedIndex].filename()), false, true);
 }
 
 void GameSystem::selectNextGame()

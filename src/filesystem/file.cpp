@@ -1,11 +1,19 @@
 #include "filesystem/file.h"
+#include "filesystem/path.h"
 #include <iostream>
 #include <sstream>
 #include <fstream>
+
+// for directory/file enumeration
 #include <dirent.h>
+
+// processes
+#include <unistd.h>
+#include <stdlib.h>
 
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>
+
 
 namespace filesystem
 {
@@ -65,6 +73,37 @@ void getSubFiles(const std::string& path, std::vector<std::string>& output)
             output.push_back((path, entry->d_name));
         }
         entry = readdir(dir);
+    }
+}
+
+
+int execute(const::std::string& path, const std::string& args, bool escapePath, bool escapeArgs)
+{
+    pid_t pid = fork();
+    if(pid == 0)
+    {
+        // child process
+
+        std::stringstream ss;
+
+        ss << (escapePath ? filesystem::path::escape(path) : path);
+        ss << " ";
+        ss << (escapeArgs ? filesystem::path::escape(args) : args); 
+        
+        std::cout << "executing: " << ss.str() << std::endl;
+
+        int exitcode = system(ss.str().c_str());
+        exit(exitcode);
+    }
+    else if(pid > 0)
+    {
+        // parent process
+        return pid;
+    }
+    else
+    {
+        // Error creating the process
+        return -1;
     }
 }
 

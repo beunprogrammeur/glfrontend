@@ -15,6 +15,8 @@ Engine::Engine(const GLuint width, const GLuint height)
     , m_state(State::Running)
     , m_renderer()
     , m_systems()
+    , m_gameRunning(false)
+    , m_gamePid(0)
 {
 }
 
@@ -48,7 +50,13 @@ void Engine::init()
 
     //m_systems[0]->loadGames();
     //m_systems[0]->selectNextGame();
-    //m_systems[0]->runSelectedGame();
+    //int pid = m_systems[0]->runSelectedGame();
+    //if(pid > 0)
+    //{
+    //    m_gameRunning = true;
+    //    m_gamePid = pid;
+    //    m_state = State::Paused;
+    //}
 }
 
 void Engine::draw()

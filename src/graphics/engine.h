@@ -24,6 +24,8 @@ private:
     State  m_state;
     graphics::textures::Renderer* m_renderer;
     std::vector<arcade::GameSystem*> m_systems;
+    bool m_gameRunning;
+    int m_gamePid;
 
 public:
     Engine(const GLuint width, const GLuint height);

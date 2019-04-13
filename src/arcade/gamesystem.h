@@ -42,7 +42,7 @@ public:
     // when unselected (lower memory usage)
     void clearGames(); 
 
-    void runSelectedGame();
+    int runSelectedGame();
     void selectNextGame();
     void selectPreviousGame();
 
