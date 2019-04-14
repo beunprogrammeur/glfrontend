@@ -18,7 +18,17 @@ int main(int argc, char** argv)
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);    
     glfwWindowHint(GLFW_RESIZABLE, GL_FALSE);
 
-    GLFWwindow* window = glfwCreateWindow(arcade::settings::screen::width(), arcade::settings::screen::height(), "Breakout", nullptr, nullptr);
+    GLFWwindow* window = nullptr;
+    if(arcade::settings::screen::isFullScreen())
+    {
+        window = glfwCreateWindow(arcade::settings::screen::width(), arcade::settings::screen::height(), "Breakout", glfwGetPrimaryMonitor(), nullptr);
+        
+    }
+    else
+    {
+        window = glfwCreateWindow(arcade::settings::screen::width(), arcade::settings::screen::height(), "Breakout", nullptr, nullptr);
+    }
+
     glfwMakeContextCurrent(window);
 
 
