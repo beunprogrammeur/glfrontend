@@ -8,6 +8,7 @@ Texture2D::Texture2D()
     : m_id(0)
     , m_width(0)
     , m_height(0)
+    , m_loaded(false)
 {
     glGenTextures(1, &m_id);
 }
@@ -38,6 +39,7 @@ void Texture2D::generate(const GLuint width, const GLuint height, unsigned char*
 
     // unbind for safety 
     glBindTexture(GL_TEXTURE_2D, 0);
+    m_loaded = true;
 }
 
 

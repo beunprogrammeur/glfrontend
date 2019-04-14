@@ -47,6 +47,11 @@ bool openTexture(const std::string& path, graphics::textures::Texture2D& texture
 
     unsigned char* data = stbi_load(path.c_str(), &width, &height, &nChannels, 0);
 
+    if(data == nullptr)
+    {
+        return false; 
+    }
+
     if(nChannels == 4)
     {
         pixelFormat = GL_RGBA;

@@ -19,11 +19,10 @@ GameSystem::GameSystem(const std::string path)
     , m_path(path)
     , m_games()
     , m_texture()
-    , m_loaded()
-    , m_selectedIndex()
+    , m_loaded(false)
+    , m_selectedIndex(0)
+    , m_texturePath(filesystem::path::concat(path, "logo.png"))
 {
-    //Only support for PNG files for now
-    filesystem::file::openTexture(filesystem::path::concat(path, "logo.png"), m_texture);
 }
 
 GameSystem::~GameSystem()
@@ -59,18 +58,38 @@ void GameSystem::loadGames()
     std::vector<std::string> files;
     filesystem::file::getSubFiles(romPath(), files);
 
+    std::string texPath = imgPath();
     for(const auto& file: files)
     {
-        m_games.push_back(Game(file));
+        auto g = new Game(file, filesystem::path::concat(texPath, filesystem::path::changeExtension(file, ".png"))); 
+        filesystem::file::openTexture(filesystem::path::concat(imgPath(), file), g->texture());
+        m_games.push_back(g);
     }
     std::cout << "loaded " << m_games.size() << " games" << std::endl;
 }
 
+void GameSystem::clearGames()
+{
+    for(auto ptr : m_games)
+    {
+        delete ptr;
+    }
+    m_games.clear();
+}
+
 int GameSystem::runSelectedGame()
 {
+    if(m_games.empty())
+    {
+        return -1;
+    }
+
     if(m_selectedIndex > m_games.size() -1)
     {
-        std::cerr << "error: " << __FUNCTION__ << ", selected index of game out of range" << std::endl;
+        std::cerr << "error: " << __FUNCTION__ 
+                  << ", selected index(" 
+                  << m_selectedIndex 
+                  << ") of game out of range" << std::endl;
         return -1;
     }
 
@@ -78,30 +97,44 @@ int GameSystem::runSelectedGame()
     
 
     std::cout << "booting rom." << std::endl
-              << "system: " << friendlyName() << std::endl
-              << "rom:    " << m_games[m_selectedIndex].filename() << std::endl;
+              << "system: "     << friendlyName() << std::endl
+              << "rom:    "     << m_games[m_selectedIndex]->filename() << std::endl;
 
 
     if(emulatorPath().length() == 0)
     {
         std::cout << "emulator for " << friendlyName() << " not given."
-                  << "see " << filesystem::path::concat(m_path, "config.ini") << std::endl;
+                  << "see "          << filesystem::path::concat(m_path, "config.ini") << std::endl;
         return -1;
     }
 
     namespace fs = filesystem;
     
-    return fs::file::execute(emulatorPath(), fs::path::concat(romPath(), m_games[m_selectedIndex].filename()), false, true);
+    return fs::file::execute(emulatorPath(), fs::path::concat(romPath(), m_games[m_selectedIndex]->filename()), true, true);
 }
 
-void GameSystem::selectNextGame()
+void GameSystem::next()
 {
-    m_selectedIndex = (m_selectedIndex + 1) % m_games.size();
+    if(!m_games.empty())
+    {
+        m_selectedIndex++;
+        if(m_selectedIndex >= m_games.size())
+        {
+            m_selectedIndex = 0;
+        }
+    }
 }
 
-void GameSystem::selectPreviousGame()
+void GameSystem::prev()
 {
-    m_selectedIndex = (m_selectedIndex - 1) % m_games.size();
+    if(!m_games.empty())
+    {
+        m_selectedIndex--;
+        if(m_selectedIndex < 0)
+        {
+            m_selectedIndex = m_games.size() - 1;
+        } 
+    }
 }
 
 
