@@ -44,5 +44,32 @@ std::string escape(const std::string& input)
     return ss.str();
 }
 
+
+std::string changeExtension(const std::string& filename, const std::string& newExtension)
+{
+    std::stringstream ss;
+    int index = filename.find_last_of('.');
+    if(index == std::string::npos)
+    {
+        ss << filename;
+        if(newExtension.find('.') == std::string::npos)
+        {
+            ss << '.';
+        }
+        ss << newExtension;
+    }
+    else
+    {
+        ss << filename.substr(0, index);
+        if(newExtension.find('.') == std::string::npos)
+        {
+            ss << '.';
+        }
+        ss << newExtension;
+    }
+
+    return ss.str();
+}
+
 } // namespace path
 } // namespace filesystem

@@ -7,10 +7,11 @@
 
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mode);
 
-
+graphics::Engine* cabinetPtr;
 int main(int argc, char** argv)
 {
 	arcade::settings::init();
+    cabinetPtr = nullptr;
 
     glfwInit();
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);   
@@ -18,7 +19,7 @@ int main(int argc, char** argv)
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);    
     glfwWindowHint(GLFW_RESIZABLE, GL_FALSE);
 
-    GLFWwindow* window = glfwCreateWindow(arcade::settings::screen::width(), arcade::settings::screen::height(), "Breakout", nullptr, nullptr);
+    GLFWwindow* window = glfwCreateWindow(arcade::settings::screen::width(), arcade::settings::screen::height(), arcade::settings::program::title().c_str(), nullptr, nullptr);
     glfwMakeContextCurrent(window);
 
 
@@ -38,6 +39,7 @@ int main(int argc, char** argv)
 	graphics::Engine cabinet(arcade::settings::screen::width(), arcade::settings::screen::height());
 
     cabinet.init();
+    cabinetPtr = &cabinet;
 
     GLfloat deltaTime = 0.0f;
     GLfloat lastFrame = 0.0f;
@@ -73,6 +75,29 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
     {
         glfwSetWindowShouldClose(window, GL_TRUE);
     } 
+
+    if(cabinetPtr)
+    {
+        if(key == GLFW_KEY_UP && action == GLFW_PRESS)
+        {
+            cabinetPtr->fireButton("up");
+        }
+
+        if(key == GLFW_KEY_DOWN && action == GLFW_PRESS)
+        {
+            cabinetPtr->fireButton("down");
+        }
+
+        if(key == GLFW_KEY_ENTER && action == GLFW_PRESS)
+        {
+            cabinetPtr->fireButton("select");
+        }
+
+        if(key == GLFW_KEY_BACKSPACE && action == GLFW_PRESS)
+        {
+            cabinetPtr->fireButton("back");
+        }
+    }
     /*
 	if(key >= 0 && key < 1024)
     {

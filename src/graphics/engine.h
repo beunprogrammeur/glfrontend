@@ -3,8 +3,14 @@
 
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
+
 #include "graphics/textures/renderer.h"
+#include "graphics/drawing/wheel.h"
+
+#include "arcade/gamesystemmanger.h"
 #include "arcade/gamesystem.h"
+
+#include "input/button.h"
 
 namespace graphics
 {
@@ -23,9 +29,11 @@ private:
     GLuint m_height;
     State  m_state;
     graphics::textures::Renderer* m_renderer;
-    std::vector<arcade::GameSystem*> m_systems;
+    arcade::GameSystemManager m_systemManager;
     bool m_gameRunning;
     int m_gamePid;
+    graphics::drawing::Wheel m_wheel;
+    std::map<std::string, input::Button> m_buttons;
 
 public:
     Engine(const GLuint width, const GLuint height);
@@ -42,6 +50,7 @@ public:
     void pause(); // for when the program loses focus
     void resume(); 
 
+    void fireButton(const std::string& name) { m_buttons[name].fire(); }
     
 };
 

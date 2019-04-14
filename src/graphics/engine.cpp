@@ -14,9 +14,11 @@ Engine::Engine(const GLuint width, const GLuint height)
     , m_height(height)
     , m_state(State::Running)
     , m_renderer()
-    , m_systems()
+    , m_systemManager()
     , m_gameRunning(false)
     , m_gamePid(0)
+    , m_wheel()
+    , m_buttons()
 {
 }
 
@@ -40,36 +42,96 @@ void Engine::init()
     m_renderer->shader().set("image", 0);
     m_renderer->shader().set("projection", projection);
 
-    arcade::GameSystem::loadSystems(m_systems);
-
-    for(auto system : m_systems)
-    {
-        std::cout << "loaded system: " << system->friendlyName() << std::endl;
-    }
 
 
-    //m_systems[0]->loadGames();
-    //m_systems[0]->selectNextGame();
-    //int pid = m_systems[0]->runSelectedGame();
-    //if(pid > 0)
-    //{
-    //    m_gameRunning = true;
-    //    m_gamePid = pid;
-    //    m_state = State::Paused;
-    //}
+    // these variables will be set by the theme manager in the future
+    m_wheel.itemWidth(200);
+    m_wheel.itemHeight(100);
+    m_wheel.itemMargin(10);
+    m_wheel.selectedItemPosX(arcade::settings::screen::width() - m_wheel.itemWidth());
+    m_wheel.selectedItemPosY(arcade::settings::screen::height() / 2 - (m_wheel.itemHeight() / 2));
+
+    m_systemManager.load();
+
+    m_buttons["up"] = input::Button([&]() {
+        if(m_systemManager.hasSelected())
+        {
+            m_systemManager.activeSystem()->next();
+        }
+        else
+        {
+            m_systemManager.next();
+        }
+    });
+
+    m_buttons["down"] = input::Button([&]() {
+        if(m_systemManager.hasSelected())
+        {
+            m_systemManager.activeSystem()->prev();
+        }
+        else
+        {
+            m_systemManager.prev();
+        }
+    });
+
+    m_buttons["select"] = input::Button([&](){
+        if(m_systemManager.hasSelected())
+        {
+            m_systemManager.activeSystem()->runSelectedGame();
+        }
+        else
+        {
+            m_systemManager.select();
+            std::cout << "selected" << m_systemManager.activeSystem()->friendlyName() << std::endl;
+        }
+    });
+
+    m_buttons["back"] = input::Button([&](){
+        if(m_systemManager.hasSelected())
+        {
+            m_systemManager.unselect();
+        }            
+    });
+/*
+    m_systems[5]->loadGames();
+    
+
+    m_buttons["up"] = input::Button([&]() {
+        if(m_activeGameSystem)
+        {
+            m_activeGameSystem->selectPreviousGame();    
+        }
+        else
+        {
+
+        }
+        m_systems[5]->selectPreviousGame();
+        std::cout << "system, index: " << m_systems[5]->friendlyName() << ", " << m_systems[5]->selectedIndex() << std::endl;
+    });
+
+    m_buttons["down"] = input::Button([&]() {
+        m_systems[5]->selectNextGame();
+    });
+*/
 }
 
 void Engine::draw()
 {
-    // m_renderer->draw(*m_tex1, glm::vec2(150, 200), glm::vec2(300, 400), 0.0f, glm::vec3(1.0f, 1.0f, 1.0f));
-    // m_renderer->draw(*m_tex2, glm::vec2(500, 200), glm::vec2(300, 400), 0.0f, glm::vec3(1.0f, 1.0f, 1.0f));
-
-    int i = 1;
-    for(auto system : m_systems)
+    if(m_systemManager.hasSelected())
     {
-        m_renderer->draw(system->texture(), glm::vec2(100*i, 100*i), glm::vec2(100, 100));
-        i++;
+        // draw game wheel
+        m_wheel.draw(*m_renderer, m_systemManager.activeSystem()->games(), m_systemManager.activeSystem()->index());
     }
+    else
+    {
+        // draw system wheel
+
+        m_wheel.draw(*m_renderer, m_systemManager.systems(), m_systemManager.index());
+    }
+    
+
+
 }
 
 void Engine::update(GLfloat dt)
@@ -84,10 +146,12 @@ void Engine::processInputs(GLfloat dt)
 
 void Engine::pause()
 {
+    m_state = State::Paused;
 }
 
 void Engine::resume()
 {   
+    m_state = State::Running;
 }
 
 } // namespace graphics

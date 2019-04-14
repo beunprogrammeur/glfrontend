@@ -4,10 +4,11 @@
 namespace arcade
 {
 
-Game::Game(const std::string filename)
+Game::Game(const std::string filename, const std::string texturePath)
     : m_texture()
     , m_friendlyName("")
     , m_filename(filename)
+    , m_texturePath(texturePath)
 {
     // ...
 }
