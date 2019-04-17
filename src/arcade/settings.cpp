@@ -32,6 +32,10 @@ void save()
     ini.save(SETTINGS_PATH);
 }
 
+namespace debug
+{
+    bool useColor() { return ini.get_int("debug", "use_color", false); }
+}
 
 
 namespace program

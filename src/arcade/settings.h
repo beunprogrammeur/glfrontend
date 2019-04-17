@@ -9,7 +9,11 @@ namespace settings
 {
     void init();
     void save();
-    
+
+    namespace debug
+    {
+        bool useColor();
+    }    
 
     namespace program
     {

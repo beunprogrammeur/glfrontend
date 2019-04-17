@@ -5,6 +5,9 @@
 #include "arcade/settings.h"
 
 #include <iostream>
+#include <thread>
+#include <chrono>
+#include <sys/wait.h>
 
 namespace graphics
 {
@@ -53,6 +56,15 @@ void Engine::init()
 
     m_systemManager.load();
 
+    
+    m_theme.load("./data/theme.json");
+
+
+    initInputs();
+}
+
+void Engine::initInputs()
+{
     m_buttons["up"] = input::Button([&]() {
         if(m_systemManager.hasSelected())
         {
@@ -78,7 +90,12 @@ void Engine::init()
     m_buttons["select"] = input::Button([&](){
         if(m_systemManager.hasSelected())
         {
-            m_systemManager.activeSystem()->runSelectedGame();
+            pid_t pid = m_systemManager.activeSystem()->runSelectedGame();
+            if(pid > 0)
+            {
+                m_gamePid = pid;
+                pause();
+            }
         }
         else
         {
@@ -93,31 +110,12 @@ void Engine::init()
             m_systemManager.unselect();
         }            
     });
-/*
-    m_systems[5]->loadGames();
-    
-
-    m_buttons["up"] = input::Button([&]() {
-        if(m_activeGameSystem)
-        {
-            m_activeGameSystem->selectPreviousGame();    
-        }
-        else
-        {
-
-        }
-        m_systems[5]->selectPreviousGame();
-        std::cout << "system, index: " << m_systems[5]->friendlyName() << ", " << m_systems[5]->selectedIndex() << std::endl;
-    });
-
-    m_buttons["down"] = input::Button([&]() {
-        m_systems[5]->selectNextGame();
-    });
-*/
 }
 
 void Engine::draw()
 {
+    m_theme.draw(*m_renderer);
+
     if(m_systemManager.hasSelected())
     {
         // draw game wheel
@@ -136,7 +134,7 @@ void Engine::draw()
 
 void Engine::update(GLfloat dt)
 {
-
+    m_theme.update(dt);
 }
 
 void Engine::processInputs(GLfloat dt)
@@ -152,6 +150,26 @@ void Engine::pause()
 void Engine::resume()
 {   
     m_state = State::Running;
+}
+
+void Engine::handleState()
+{
+    if(paused() && m_gamePid > 0)
+    {
+        int status = 0;
+        if(waitpid(m_gamePid, &status, WNOHANG) == 0)
+        {
+            // game is running
+            std::chrono::milliseconds ms(250);
+            std::this_thread::sleep_for(ms);
+        }
+        else
+        {
+            // signaling failed. program has quit.
+            m_gamePid = 0;
+            resume();
+        }
+    }
 }
 
 } // namespace graphics

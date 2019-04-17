@@ -27,7 +27,7 @@ public:
     inline graphics::Shader& shader() { return m_shader; }
 
     void compile(const char* vertPath, const char* fragPath, const char* geoPath = nullptr);
-    void draw(graphics::textures::Texture2D &texture, glm::vec2 position, glm::vec2 size = glm::vec2(10, 10), GLfloat rotate = 0.0f, glm::vec3 color = glm::vec3(1.0f));
+    void draw(graphics::textures::Texture2D &texture, glm::vec2 position, glm::vec2 size = glm::vec2(10, 10), GLfloat rotate = 0.0f, glm::vec3 color = glm::vec3(1.0f), GLfloat opacity = 1.0f);
 };
 
 

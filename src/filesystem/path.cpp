@@ -71,5 +71,28 @@ std::string changeExtension(const std::string& filename, const std::string& newE
     return ss.str();
 }
 
+std::string getPathWithoutFileName(const std::string& path)
+{
+    if(path.size() == 0)
+    {
+        return "";
+    }
+
+    int index = 0;
+    if((index = path.find_last_of("/")) == std::string::npos)
+    {
+        if((index = path.find_last_of("\\")) == std::string::npos)
+        {
+            return path;
+        }
+
+        return "";
+    }
+    else
+    {
+        return path.substr(0, index);
+    }
+}
+
 } // namespace path
 } // namespace filesystem

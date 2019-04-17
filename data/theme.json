@@ -1,0 +1,18 @@
+{
+    "resources": [
+        { "type": "texture", "name": "ball",     "path": "theme/textures/ball.png"    },
+        { "type": "texture", "name": "triangle", "path":"theme/textures/triangle.png" }
+    ],
+    "scenes": [        
+        { "name": "moving n64logo", "resource": "ball", "actions": [
+            {"id": "0", "size": ["100", "100"], "translate": ["100px","100px"], "time": "500", "next": "1"},
+            {"id": "1", "time": "400", "next": "2"},
+            {"id": "2", "translate": ["50%", "50%"], "time":"500", "next": "3"},
+            {"id": "3", "time": "400", "next": "0"}
+        ]},
+        { "name":"nes logo move stop", "resource": "triangle", "actions": [
+            {"id":"topleft",    "size": ["200", "100"], "translate":["100px", "100px"], "time": "750", "next":"bottomleft"},
+            {"id":"bottomleft", "translate":["100px", "90%"], "time": "750", "next":"bottomleft"}
+        ]}
+    ]
+}

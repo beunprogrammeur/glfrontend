@@ -30,6 +30,8 @@ void getSubDirs(const std::string& path, std::vector<std::string>& subDirs)
         }
         entry = readdir(dir);
     }
+
+    closedir(dir);
 } 
 
 } // namespace directory

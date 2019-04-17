@@ -11,6 +11,7 @@
 #include "graphics/drawing/drawable.h"
 
 #include "filesystem/path.h"
+#include "debug/logger.h"
 
 namespace arcade
 {
@@ -25,6 +26,7 @@ private:
     bool m_loaded;
     GLint m_selectedIndex;
     std::string m_texturePath;
+    static debug::Logger s_debug;
 
 protected:
     std::string emulatorPath() { return m_ini.get("emulation", "emu_path"); };

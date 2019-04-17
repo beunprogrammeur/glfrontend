@@ -6,6 +6,8 @@
 namespace arcade
 {
 
+debug::Logger GameSystemManager::s_debug("gamesystem manager");
+
 GameSystemManager::GameSystemManager()
     : m_active(nullptr)
     , m_systems()
@@ -28,7 +30,7 @@ void GameSystemManager::load()
 
     for(auto system : m_systems)
     {
-        std::cout << "loaded system: " << system->friendlyName() << std::endl;
+        s_debug.print("loaded system: ", system->friendlyName());
     }
 }
 

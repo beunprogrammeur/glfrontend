@@ -1,5 +1,7 @@
 #include "filesystem/file.h"
 #include "filesystem/path.h"
+
+// std
 #include <iostream>
 #include <sstream>
 #include <fstream>
@@ -11,6 +13,7 @@
 #include <unistd.h>
 #include <stdlib.h>
 
+// texture loading
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>
 
@@ -60,7 +63,24 @@ bool openTexture(const std::string& path, graphics::textures::Texture2D& texture
     texture.generate(width, height, data, pixelFormat, pixelFormat);
 
     stbi_image_free(data);
+    return true;
 }
+
+bool readJson(const std::string& path, rapidjson::Document& document)
+{
+    std::ifstream file;
+    file.open(path);
+    if(!file.is_open())
+    {
+        return false;
+    }
+    std::stringstream ss;
+    ss << file.rdbuf();
+    file.close();
+
+    return !document.Parse(ss.str().c_str()).HasParseError();    
+}
+
 
 void getSubFiles(const std::string& path, std::vector<std::string>& output)
 {
@@ -79,6 +99,8 @@ void getSubFiles(const std::string& path, std::vector<std::string>& output)
         }
         entry = readdir(dir);
     }
+
+    closedir(dir);
 }
 
 
@@ -110,6 +132,53 @@ int execute(const::std::string& path, const std::string& args, bool escapePath, 
         // Error creating the process
         return -1;
     }
+}
+
+std::string getString(const rapidjson::Value& json, const std::string& key, const std::string& defaultValue)
+{
+    if(!json.HasMember(key.c_str()))
+    {
+        return defaultValue;
+    }
+
+    if(!json[key.c_str()].IsString())
+    {
+        return defaultValue;
+    }
+
+    return json[key.c_str()].GetString();
+}
+
+bool getArray(const rapidjson::Value& json, const std::string& key, std::string arr[], const int size, const std::string& defaultValue)
+{
+    if(!json.HasMember(key.c_str())) 
+    {
+        return false;
+    }
+
+    if(!json[key.c_str()].IsArray())
+    {
+        if(json[key.c_str()].IsString())
+        {
+            for(int i = 0; i < size; i++)
+            {
+                arr[i] = std::string(json[key.c_str()].GetString());
+            }
+        }
+        else
+        {
+            return false;
+        }
+    }
+    
+    auto array = json[key.c_str()].GetArray();
+    int outputSize = (size > array.Size()) ? array.Size() : size;
+
+    for(int i = 0; i < outputSize; i++)
+    {
+        arr[i] = std::string(array[i].GetString());
+    }
+    return true;
 }
 
 

@@ -12,6 +12,9 @@
 
 #include "input/button.h"
 
+#include "graphics/drawing/theme.h"
+
+
 namespace graphics
 {
 
@@ -34,6 +37,9 @@ private:
     int m_gamePid;
     graphics::drawing::Wheel m_wheel;
     std::map<std::string, input::Button> m_buttons;
+    graphics::drawing::Theme m_theme;
+
+    void initInputs();
 
 public:
     Engine(const GLuint width, const GLuint height);
@@ -48,8 +54,10 @@ public:
 
 
     void pause(); // for when the program loses focus
+    bool paused() const { return m_state == State::Paused; }
     void resume(); 
 
+    void handleState();
     void fireButton(const std::string& name) { m_buttons[name].fire(); }
     
 };

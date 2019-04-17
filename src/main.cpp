@@ -4,6 +4,7 @@
 
 #include "graphics/engine.h"
 #include "arcade/settings.h"
+#include "debug/logger.h"
 
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mode);
 
@@ -12,6 +13,12 @@ int main(int argc, char** argv)
 {
 	arcade::settings::init();
     cabinetPtr = nullptr;
+
+    if(arcade::settings::debug::useColor())
+    {
+        debug::Logger::useColor();
+    }
+
 
     glfwInit();
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);   
@@ -58,6 +65,14 @@ int main(int argc, char** argv)
 
     while(!glfwWindowShouldClose(window))
     {
+        cabinet.handleState();
+        if(cabinet.paused())
+        {
+            // don't draw when paused. handle state will wait 
+            // for the child process to die. (emulator)
+            continue;
+        }
+
         GLfloat currentFrame = glfwGetTime();
         deltaTime = currentFrame - lastFrame;
         lastFrame = currentFrame;
@@ -80,49 +95,35 @@ int main(int argc, char** argv)
 
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mode)
 {
-    if(key == GLFW_KEY_ESCAPE && action == GLFW_PRESS ||
-       key == GLFW_KEY_Q && action == GLFW_PRESS)
+    // for now, only accept presses (no holds or releases)
+    if(action != GLFW_PRESS)
     {
-        glfwSetWindowShouldClose(window, GL_TRUE);
-    } 
+        return;
+    }
 
     if(cabinetPtr)
     {
-        if(key == GLFW_KEY_UP && action == GLFW_PRESS)
+        switch(key)
         {
-            cabinetPtr->fireButton("up");
-        }
-
-        if(key == GLFW_KEY_DOWN && action == GLFW_PRESS)
-        {
-            cabinetPtr->fireButton("down");
-        }
-
-        if(key == GLFW_KEY_ENTER && action == GLFW_PRESS)
-        {
-            cabinetPtr->fireButton("select");
-        }
-
-        if(key == GLFW_KEY_BACKSPACE && action == GLFW_PRESS)
-        {
-            cabinetPtr->fireButton("back");
+            case GLFW_KEY_UP:
+                cabinetPtr->fireButton("up");
+                break;
+            case GLFW_KEY_DOWN:
+                cabinetPtr->fireButton("down");
+                break;
+            case GLFW_KEY_ENTER:
+            case GLFW_KEY_KP_ENTER:
+                cabinetPtr->fireButton("select");
+                break;
+            case GLFW_KEY_BACKSPACE:
+                cabinetPtr->fireButton("back");
+                break;
+            case GLFW_KEY_Q:
+            case GLFW_KEY_ESCAPE:
+                glfwSetWindowShouldClose(window, GL_TRUE);
+            default:
+                // unregistered key
+                break;
         }
     }
-    /*
-	if(key >= 0 && key < 1024)
-    {
-        if(action == GLFW_PRESS)
-        {
-            Breakout.Keys[key] = GL_TRUE;
-        }
-        else if(action == GLFW_RELEASE)
-        {
-            Breakout.Keys[key] = GL_FALSE;
-        }
-        else
-        {
-            // nothing here..
-        }  
-    }
-	*/
 }

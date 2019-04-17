@@ -13,6 +13,7 @@
 #include "filesystem/directory.h"
 namespace arcade
 {
+debug::Logger GameSystem::s_debug("gamesystem");
 
 GameSystem::GameSystem(const std::string path)
     : m_ini(Ini::fromFile(filesystem::path::concat(path, "config.ini")))
@@ -53,7 +54,7 @@ void GameSystem::loadGames()
         return;
     }
 
-    std::cout << "loading games for: " << friendlyName() << std::endl;
+    s_debug.print("loading games for: ", friendlyName());
 
     std::vector<std::string> files;
     filesystem::file::getSubFiles(romPath(), files);
@@ -65,7 +66,7 @@ void GameSystem::loadGames()
         filesystem::file::openTexture(filesystem::path::concat(imgPath(), file), g->texture());
         m_games.push_back(g);
     }
-    std::cout << "loaded " << m_games.size() << " games" << std::endl;
+    s_debug.print("loaded ", m_games.size()," games");
 }
 
 void GameSystem::clearGames()
@@ -77,6 +78,10 @@ void GameSystem::clearGames()
     m_games.clear();
 }
 
+/* Runs the by this gamesystem selected game
+*  With the given emulator (if available)
+*  Returns: the pid of the child process that runs the game
+*/
 int GameSystem::runSelectedGame()
 {
     if(m_games.empty())
@@ -86,25 +91,19 @@ int GameSystem::runSelectedGame()
 
     if(m_selectedIndex > m_games.size() -1)
     {
-        std::cerr << "error: " << __FUNCTION__ 
-                  << ", selected index(" 
-                  << m_selectedIndex 
-                  << ") of game out of range" << std::endl;
+        s_debug.error("selected index(", m_selectedIndex, ") out of range");
         return -1;
     }
 
     // TODO: PCRE2 implementation? search and replace variables
     
-
-    std::cout << "booting rom." << std::endl
-              << "system: "     << friendlyName() << std::endl
-              << "rom:    "     << m_games[m_selectedIndex]->filename() << std::endl;
+    s_debug.print("booting rom: ", m_games[m_selectedIndex]->filename(), " for system: ", friendlyName());
 
 
     if(emulatorPath().length() == 0)
     {
-        std::cout << "emulator for " << friendlyName() << " not given."
-                  << "see "          << filesystem::path::concat(m_path, "config.ini") << std::endl;
+        s_debug.warn("emulator not configured for ", friendlyName(), "\n",
+                     "see ", filesystem::path::concat(m_path, "config.ini"));
         return -1;
     }
 

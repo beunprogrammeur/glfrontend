@@ -89,7 +89,7 @@ void Renderer::compile(const char* vertPath, const char* fragPath, const char* g
     m_shader.compile(vertSrc.c_str(), fragSrc.c_str(), geoPath != nullptr ? geoSrc.c_str() : nullptr); 
 }
 
-void Renderer::draw(Texture2D &texture, glm::vec2 position, glm::vec2 size, GLfloat rotate, glm::vec3 color)
+void Renderer::draw(Texture2D &texture, glm::vec2 position, glm::vec2 size, GLfloat rotate, glm::vec3 color, GLfloat opacity)
 {
     m_shader.use();
     glm::mat4 model = glm::mat4(1.0f);
@@ -99,7 +99,7 @@ void Renderer::draw(Texture2D &texture, glm::vec2 position, glm::vec2 size, GLfl
     model = glm::scale(    model, glm::vec3(size, 1.0f));
 
     m_shader.set("model", model);
-    m_shader.set("spriteColor", color);
+    m_shader.set("spriteColor", glm::vec4(color, opacity));
 
     glActiveTexture(GL_TEXTURE0);
     texture.bind();

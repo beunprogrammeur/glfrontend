@@ -3,6 +3,7 @@
 
 #include <vector>
 #include <string>
+#include "debug/logger.h"
 
 namespace arcade
 {
@@ -16,6 +17,8 @@ private:
     std::vector<GameSystem*> m_systems;
 
     int m_index;
+
+    static debug::Logger s_debug;
 
 public:
      GameSystemManager();
