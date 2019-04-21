@@ -14,6 +14,7 @@
 #include <glm/gtc/matrix_transform.hpp>
 
 #include "filesystem/file.h"
+#include "graphics/drawing/dimensions.h"
 
 namespace graphics
 {
@@ -24,29 +25,16 @@ class Wheel
 {
 private:
     int m_drawCount;
-    int m_itemWidth;
-    int m_itemHeight;
-    int m_itemMargin;
-    int m_selectedPosX;
-    int m_selectedPosY;
+    graphics::drawing::Dimensions m_selectedItemDimensions;
 
 public:
     Wheel();
 
     template <typename implements_drawable> void draw(graphics::textures::Renderer& renderer,const std::vector<implements_drawable*>& drawables, int selectedIndex);
-    
-    inline int  drawCount()             const { return m_drawCount;    }
-    inline void drawCount(int count)          { m_drawCount = count;   }
-    inline int  itemWidth()             const { return m_itemWidth;    }
-    inline void itemWidth(int width)          { m_itemWidth = width;   }
-    inline int  itemHeight()            const { return m_itemHeight;   }
-    inline void itemHeight(int height)        { m_itemHeight = height; }
-    inline int  itemMargin()            const { return m_itemMargin;   } 
-    inline void itemMargin(int margin)        { m_itemMargin = margin; }  
-    inline int  selectedItemPosX()      const { return m_selectedPosX; }
-    inline void selectedItemPosX(int x)       { m_selectedPosX = x;    }
-    inline int  selectedItemPosY()      const { return m_selectedPosY; }
-    inline void selectedItemPosY(int y)       { m_selectedPosY = y;    }
+
+    inline int  drawCount()    const { return m_drawCount;    }
+    inline void drawCount(int count) { m_drawCount = count;   }
+    inline Dimensions& dimensions()  { return m_selectedItemDimensions; }
 };
 
 
@@ -61,15 +49,15 @@ void Wheel::draw(graphics::textures::Renderer& renderer, const std::vector<imple
 
     int screenWidth  = arcade::settings::screen::width();
     int screenHeight = arcade::settings::screen::height();
-    
-    glm::vec2 size(itemWidth(), itemHeight());
-    glm::vec2 pos(selectedItemPosX(), selectedItemPosY());
+
+    // make a copy for the current instance
+    auto dim = m_selectedItemDimensions;
 
     /**-- from here on the new version --**/
     int index = selectedIndex;
-    while(pos.y + size.y + itemMargin() > 0)
+    while(dim.position.y + dim.size.y + dim.margin.y > 0)
     {
-        pos.y -= size.y + itemMargin();
+        dim.position.y -= dim.size.y + dim.margin.y;
         index = (index-1) % count;
     }
 
@@ -84,7 +72,7 @@ void Wheel::draw(graphics::textures::Renderer& renderer, const std::vector<imple
         index = count - index;
     }
 
-    while(pos.y < screenHeight)
+    while(dim.position.y < screenHeight)
     {
         index = (index + 1) % count;
         Drawable* drawable = reinterpret_cast<Drawable*>(drawables[index]);
@@ -94,8 +82,8 @@ void Wheel::draw(graphics::textures::Renderer& renderer, const std::vector<imple
             filesystem::file::openTexture(drawable->texturePath(), drawable->texture());
         }
 
-        renderer.draw(drawable->texture(), pos, size);
-        pos.y += itemMargin() + size.y;
+        renderer.draw(drawable->texture(), dim.position, dim.size);
+        dim.position.y += dim.margin.y + dim.size.y;
     }
 }
 

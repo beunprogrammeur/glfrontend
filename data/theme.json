@@ -1,9 +1,13 @@
 {
     "resources": [
-        { "type": "texture", "name": "ball",     "path": "theme/textures/ball.png"    },
-        { "type": "texture", "name": "triangle", "path":"theme/textures/triangle.png" }
+        { "type": "texture", "name": "ball",     "path": "theme/ball.png"    },
+        { "type": "texture", "name": "triangle", "path": "theme/triangle.png" },
+        { "type": "texture", "name": "selection_backdrop", "path": "theme/selection_backdrop.png"},
+        { "type": "bgcolor", "name": "background"},
+        { "type": "wheel", "name": "image_wheel"}
+
     ],
-    "scenes": [        
+    "scenes": [
         { "name": "moving n64logo", "resource": "ball", "actions": [
             {"id": "0", "size": ["100", "100"], "translate": ["100px","100px"], "time": "500", "next": "1"},
             {"id": "1", "time": "400", "next": "2"},
@@ -13,6 +17,35 @@
         { "name":"nes logo move stop", "resource": "triangle", "actions": [
             {"id":"topleft",    "size": ["200", "100"], "translate":["100px", "100px"], "time": "750", "next":"bottomleft"},
             {"id":"bottomleft", "translate":["100px", "90%"], "time": "750", "next":"bottomleft"}
+        ]},
+        { "name": "wheel selection backdrop", "resource": "selection_backdrop", "actions": [
+            {"id": "0", "size": ["220px", "120px"], "translate": ["490px","320px"] }
+        ]},
+
+        { "name": "linear translation", "resource": "ball", "actions": [
+            {"id": "foo", "time":"500", "translate": ["100px", "100px"], "size": ["100px", "100px"], "next": "bar"},
+            {"id": "bar", "time":"500", "translate": ["200px", "200px"], "next": "foo"}
+        ]},
+
+        { "name": "teleport translation", "resource": "ball", "actions": [
+            {"id": "foo", "translate": ["300px", "100px"], "size": ["100px", "100px"], "next": "wait1"},
+            {"id": "wait1", "time": "500", "next": "bar"},
+            {"id": "bar", "translate": ["400px", "200px"], "next": "wait2"},
+            {"id": "wait2", "time":"500", "next": "foo"}
+        ]},
+
+        {"name": "move triangle", "resource": "ball", "actions": [
+            {"id": "foo", "time":"10000", "translate": ["10%", "10%"], "size": ["100px", "100px"], "next": "bar"},
+            {"id": "bar", "time":"10000", "translate": ["10%", "90%"], "next": "baz"},
+            {"id": "baz", "time":"10000", "translate": ["90%", "90%"], "next": "foo"}
+        ]},
+
+        {"name": "bg color loop", "resource": "background", "actions": [
+            {"id": "red", "color": ["1.0", "0.0", "0.0"], "time": "1500", "next": "green"},
+            {"id": "green", "color": ["0.0", "1.0", "0.0"], "time": "1500", "next": "blue"},
+            {"id": "blue", "color": ["0.0", "0.0", "1.0"], "time": "1500", "next": "red"}
+
+
         ]}
     ]
 }

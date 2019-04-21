@@ -8,6 +8,8 @@
 
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mode);
 
+
+
 graphics::Engine* cabinetPtr;
 int main(int argc, char** argv)
 {
@@ -81,15 +83,13 @@ int main(int argc, char** argv)
         cabinet.processInputs(deltaTime);
         cabinet.update(deltaTime);
 
-        glClearColor(1.0f, 0.5f, 0.3f, 1.0f);
-        glClear(GL_COLOR_BUFFER_BIT);
-        
 		cabinet.draw();
 
         glfwSwapBuffers(window);
     }
 
 	arcade::settings::save();
+    glfwDestroyWindow(window);
     return 0;
 }
 

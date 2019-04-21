@@ -11,7 +11,8 @@
 
 #include <rapidjson/document.h>
 
-#include "graphics/drawing/scene.h"
+#include "graphics/drawing/scenes/bgcolor_scene.h"
+#include "graphics/drawing/dimensions.h"
 
 
 namespace graphics
@@ -21,8 +22,8 @@ namespace drawing
 class Theme
 {
 private:
-    std::map<std::string, graphics::resources::TextureResource*> m_textures;
-    std::vector<Scene> m_scenes;
+    std::map<std::string, graphics::resources::Resource*> m_resources;
+    std::vector<scenes::Scene*> m_scenes;
     debug::Logger m_debug;
 
     enum class ConversionScale
@@ -33,18 +34,21 @@ private:
     };
 
 
-    void loadResource(const std::string& jsonRoot, const rapidjson::Value& resource);
+
+
+    void loadResource(const std::string& jsonRoot, const rapidjson::Value& resource, glm::vec4& bgcolor);
     void loadScene(const rapidjson::Value& scene);
-    void loadAction(Scene& scene, const rapidjson::Value& action);
-    int convertUnitToNumber(const std::string& unit, int defaultValue = INT_MIN, ConversionScale scale = ConversionScale::None);
+    void loadDrawableAction(scenes::Scene& scene, const rapidjson::Value& action);
+    void loadBGColorAction(scenes::Scene& scene, const rapidjson::Value& action);
+    GLfloat convertUnitToNumber(const std::string& unit, int defaultValue = INT_MIN, ConversionScale scale = ConversionScale::None);
 public:
      Theme();
     ~Theme();
 
-    void load(const std::string& path);
+    void load(const std::string& path, glm::vec4& bgcolor);
 
     void draw(graphics::textures::Renderer& renderer);
-    void update(GLfloat dt);
+    void update(GLfloat dt, glm::vec4& bgColor, Dimensions& wheelDimensions);
 };
 } // namespace drawing
 } // namespace graphics
