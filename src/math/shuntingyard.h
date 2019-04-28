@@ -14,7 +14,8 @@ namespace math
 namespace shuntingyard
 {
 
-bool calculateInfix(const std::string &expression, float& result, float hundredPercentValue = 100.0f, const std::map<std::string, float> &variables = {});
+float calc(const std::string &expression, float hundredPercentValue,
+           std::map<std::string, float> &variables);
 
 } // namespace shuntingyard
 } // namespace math

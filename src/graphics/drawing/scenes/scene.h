@@ -28,8 +28,8 @@ public:
     ~Scene();
     virtual void update(GLfloat dt) = 0;
 
-    void addAction(const std::string& id, actions::Action* action);
-
+    virtual void addAction(const std::string& id, actions::Action* action);
+    inline const std::string &currentActionId() { return m_currentActionId; }
     inline const std::string &resourceId() const
     { return m_resource; }
 };

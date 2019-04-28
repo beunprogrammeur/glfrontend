@@ -9,12 +9,13 @@
     ],
     "scenes": [
         { "name": "wheel selection backdrop", "resource": "selection_backdrop", "actions": [
-            {"id": "0", "size": ["220px", "120px"], "rotation": "90", "opacity": "1", "time":"500","translate": ["490px","320px"], "next": "secondary_state"},
+            {"id": "0", "size": ["220", "120"], "opacity": "1", "time":"500","translate": ["screenw - (width / 2) -10","320"], "next": "secondary_state"},
             {"id": "secondary_state", "opacity": "0", "time": "500", "next": "0"}
         ]},
 
         {"name": "www", "resource": "image_wheelss", "actions": [
-            {"id": "initial_state", "size": ["200px", "100px"], "translate": ["50%","20%"], "displacement": ["210px", "0px"]}
+            {"id": "initial_state", "size": ["200", "100"], "translate": ["50%","20%"], "displacement": ["210", "0"]}
         ]}
+
     ]
 }

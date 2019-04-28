@@ -6,6 +6,8 @@
 #include <sstream>
 #include "debug/logger.h"
 #include <cctype>
+#include <vector>
+#include <functional>
 
 namespace math {
 namespace shuntingyard {
@@ -13,59 +15,152 @@ namespace shuntingyard {
 // private
 namespace {
 
-char operators[]{'+', '-', '*', '/'};
+std::map<char, int> operators = {{'+', 1},
+                                 {'-', 1},
+                                 {'*', 2},
+                                 {'/', 2}};
+
+std::map<char, std::function<float(float, float)>> operate = {
+        {'+', [](float a, float b) { return a + b; }},
+        {'-', [](float a, float b) { return a - b; }},
+        {'*', [](float a, float b) { return a * b; }},
+        {'/', [](float a, float b) { return a / b; }},
+};
+
+debug::Logger log("shunting yard");
 
 inline bool isOperator(char c)
 {
-    for (char op : operators) {
-        if (op == c) {
-            return true;
-        }
+    return operators.find(c) != operators.end();
+}
+
+inline int precedence(char op)
+{
+    if(!isOperator(op))
+    {
+        return 0;
     }
-    return false;
+
+    return operators[op];
 }
 
 } // private namespace
 
 
-bool calculateInfix(const std::string &expression, float& result, float hundredPercentValue, const std::map<std::string, float> &variables)
+float calc(const std::string &expression, float hundredPercentValue,
+          std::map<std::string, float> &variables)
 {
-    //TODO: implement shunting yard algorithm so we can use complex calculations in theme positioning
+    std::vector<char> ops;
+    std::vector<float> values;
 
-    std::stringstream ss;
-    debug::Logger log;
-    log.print(expression);
+    const char *c = expression.c_str();
+    for (; c[0] != '\0'; c++) {
+        if (c[0] == ' ') {
+            continue;
+        }
 
-    for (const auto c : expression) {
-        if (isOperator(c))
-        {
-            log.print(c, " is an operator");
+        if (c[0] == '(') {
+            ops.push_back(c[0]);
+            continue;
         }
-        else if(c == ' ')
-        {
-            log.print("ignoring whitespace");
+
+
+        if (std::isdigit(c[0])) {
+            std::stringstream ss;
+
+            while (std::isdigit(c[0]) || c[0] == '.') {
+                ss << c[0];
+                c++;
+            }
+
+            float num = 1.0f;
+            ss >> num;
+            std::string str;
+            ss >> str;
+
+            if (c[0] == '%') {
+                c++;
+                num = hundredPercentValue / 100.0f * num;
+            }
+
+            values.push_back(num);
+            c--; // compensate for the last c++;
+            continue;
         }
-        else if(std::isdigit(c))
-        {
-            log.print(c, " is a digit");
+
+
+        if (c[0] == ')') {
+            while (!ops.empty() && ops.back() != '(') {
+                float a = values.back();
+                values.pop_back();
+
+                float b = values.back();
+                values.pop_back();
+
+                char op = ops.back();
+                ops.pop_back();
+
+                values.push_back(operate[op](b, a));
+            }
+            ops.pop_back();
+            continue;
         }
-        else if (std::isalpha(c))
-        {
-            log.print(c, " is a letter");
+
+        if (std::isalpha(c[0])) {
+            std::stringstream ss;
+            while (std::isalpha(c[0])) {
+                ss << c[0];
+                c++;
+            }
+
+            if (variables.find(ss.str()) != variables.end()) {
+                float variable = variables[ss.str()];
+                values.push_back(variable);
+            }
+            else {
+                log.warn("unidentified variable ", ss.str(), " in formula '", expression, "'");
+            }
+
+            c--; // compensate for the last c++
+            continue;
         }
-        else if(c == '(')
-        {
-            log.warn(c, " is an opening bracket");
+
+        if (isOperator(c[0])) {
+            while (!ops.empty() && precedence(ops.back()) >= precedence(c[0]))
+            {
+                float a = values.back();
+                values.pop_back();
+
+                float b = values.back();
+                values.pop_back();
+
+                char op = ops.back();
+                ops.pop_back();
+
+                values.push_back(operate[op](b, a));
+            }
+            ops.push_back(c[0]);
+            continue;
         }
-        else if(c == ')')
-        {
-            log.warn(c, " is a closing bracket");
-        }
-        else
-        {
-            log.error(c, " is unkown");
-        }
+
+        log.error("unknown character '", c, "' in formula '", expression, "'");
     }
+
+    while(!ops.empty())
+    {
+        float a = values.back();
+        values.pop_back();
+
+        float b = values.back();
+        values.pop_back();
+
+        char op = ops.back();
+        ops.pop_back();
+
+        values.push_back(operate[op](b, a));
+    }
+
+    return values.back();
 }
 
 

@@ -67,6 +67,15 @@ void DrawableScene::update(GLfloat dt)
     }
 }
 
+void DrawableScene::addAction(const std::string &id, actions::Action *action)
+{
+    if(currentActionId().empty())
+    {
+        this->m_dimensions = static_cast<actions::DrawableAction*>(action)->dimensions();
+    }
+    Scene::addAction(id, action);
+}
+
 } // namespace scenes
 } // namespace drawing
 } // namespace graphics

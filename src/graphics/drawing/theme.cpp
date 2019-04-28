@@ -7,6 +7,8 @@
 #include <sstream>
 #include <iostream>
 
+#include "math/shuntingyard.h"
+
 #include "graphics/drawing/actions/bgcolor_action.h"
 #include "graphics/drawing/scenes/drawable_scene.h"
 #include "wheel.h"
@@ -23,7 +25,7 @@ Theme::Theme()
 
 Theme::~Theme()
 {
-    for(auto pair : m_resources) {
+    for (auto pair : m_resources) {
         delete pair.second;
     }
 
@@ -119,7 +121,7 @@ void Theme::loadDrawableAction(scenes::Scene &scene, const rapidjson::Value &act
     GLfloat durationMs = convertUnitToNumber(time, 0, ConversionScale::None);
 
 
-    auto* myAction = new actions::DrawableAction;
+    auto *myAction = new actions::DrawableAction;
     myAction->dimensions(jsonToDimensions(action));
     myAction->duration(durationMs);
     myAction->resetTime();
@@ -132,7 +134,7 @@ void Theme::loadDrawableAction(scenes::Scene &scene, const rapidjson::Value &act
     scene.addAction(id, myAction);
 }
 
-Dimensions Theme::jsonToDimensions(const rapidjson::Value& json)
+Dimensions Theme::jsonToDimensions(const rapidjson::Value &json)
 {
 
     std::string targetdeg = filesystem::file::getString(json, "rotation");
@@ -152,14 +154,14 @@ Dimensions Theme::jsonToDimensions(const rapidjson::Value& json)
 
 
     filesystem::file::getArray(json, "translate", translate, sizeof(translate),
-            std::to_string(Dimensions::kPositionDefault));
+                               std::to_string(Dimensions::kPositionDefault));
     filesystem::file::getArray(json, "size", size, sizeof(size),
-            std::to_string(Dimensions::kPositionDefault));
+                               std::to_string(Dimensions::kPositionDefault));
     filesystem::file::getArray(json, "displacement", displacement, sizeof(displacement),
-            std::to_string(Dimensions::kDisplacementDefault));
+                               std::to_string(Dimensions::kDisplacementDefault));
 
     Dimensions dimensions;
-
+/*
     dimensions.position.x = convertUnitToNumber(translate[0],
             Dimensions::kPositionDefault, ConversionScale::HorizontalPixels);
     dimensions.position.y = convertUnitToNumber(translate[1],
@@ -176,6 +178,71 @@ Dimensions Theme::jsonToDimensions(const rapidjson::Value& json)
             Dimensions::kDisplacementDefault, ConversionScale::HorizontalPixels);
     dimensions.displacement.y = convertUnitToNumber(displacement[1],
             Dimensions::kDisplacementDefault, ConversionScale::VerticalPixels);
+*/
+    std::map<std::string, float> variables = {
+            {"screenw", arcade::settings::screen::width()},
+            {"screenh", arcade::settings::screen::height()}
+    };
+
+    if (size[0].empty()) {
+        dimensions.size.x = Dimensions::kSizeDefault;
+        dimensions.size.y = Dimensions::kSizeDefault;
+
+    }
+    else if (size[1].empty()) {
+        dimensions.size.x = math::shuntingyard::calc(size[0], variables["screenw"], variables);
+        dimensions.size.y = dimensions.size.y;
+    }
+    else {
+        dimensions.size.x = math::shuntingyard::calc(size[0], variables["screenw"], variables);
+        dimensions.size.y = math::shuntingyard::calc(size[1], variables["screenw"], variables);
+
+    }
+
+    variables["width"] = dimensions.size.x;
+    variables["height"] = dimensions.size.y;
+
+    if (translate[0].empty()) {
+        dimensions.position.x = Dimensions::kPositionDefault;
+        dimensions.position.y = dimensions.position.x;
+    }
+    else if (translate[1].empty()) {
+        dimensions.position.x = math::shuntingyard::calc(translate[0], variables["screenw"], variables);
+        dimensions.position.y = dimensions.position.x;
+    }
+    else {
+        dimensions.position.x = math::shuntingyard::calc(translate[0], variables["screenw"], variables);
+        dimensions.position.y = math::shuntingyard::calc(translate[1], variables["screenh"], variables);
+    }
+
+
+    if (displacement[0].empty()) {
+        dimensions.displacement.x = Dimensions::kDisplacementDefault;
+        dimensions.displacement.y = dimensions.displacement.x;
+
+    }
+    else if (displacement[1].empty()) {
+        dimensions.displacement.x = math::shuntingyard::calc(displacement[0], variables["screenw"], variables);
+        dimensions.displacement.y = dimensions.displacement.x;
+    }
+    else {
+        dimensions.displacement.x = math::shuntingyard::calc(displacement[0], variables["screenw"], variables);
+        dimensions.displacement.y = math::shuntingyard::calc(displacement[0], variables["screenh"], variables);
+    }
+
+    if (targetdeg.empty()) {
+        dimensions.angle = Dimensions::kAngleDefault;
+    }
+    else {
+        dimensions.angle = math::shuntingyard::calc(targetdeg, 360.0f, variables);
+    }
+
+    if (targetOpacity.empty()) {
+        dimensions.opacity = Dimensions::kOpacityDefault;
+    }
+    else {
+        dimensions.opacity = math::shuntingyard::calc(targetOpacity, 1.0f, variables);
+    }
 
     return dimensions;
 }

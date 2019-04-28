@@ -85,19 +85,19 @@ if you want to teleport, select time = 0 and wait in the next action.
 example:
         
         { "name": "linear translation", "resource": "ball", "actions": [
-            {"id": "foo", "time":"500", "translate": ["100px", "100px"], "size": ["100px", "100px"], "next": "bar"},
-            {"id": "bar", "time":"500", "translate": ["200px", "200px"], "next": "foo"}
+            {"id": "foo", "time":"500", "translate": ["100", "100"], "size": ["100", "100"], "next": "bar"},
+            {"id": "bar", "time":"500", "translate": ["200", "200"], "next": "foo"}
         ]}
 
         { "name": "teleport translation", "resource": "ball", "actions": [
-            {"id": "foo", "translate": ["100px", "100px"], "size": ["100px", "100px"], "next": "wait1"},
+            {"id": "foo", "translate": ["100", "100"], "size": ["100", "100"], "next": "wait1"},
             {"id": "wait1", "time": "500", "next": "bar"},
-            {"id": "bar", "translate": ["200px", "200px"], "next": "wait2"},
+            {"id": "bar", "translate": ["200", "200"], "next": "wait2"},
             {"id": "wait2", "time":"500", "next": "foo"}
         ]}
 
         { "name": "static draw", "resource": "ball", "actions": [
-            {"id": "foo", "size": ["100px", "100px"], "translate": ["100px", "100px"], "next": "foo"}
+            {"id": "foo", "size": ["100", "100"], "translate": ["100", "100"], "next": "foo"}
         ]}
 
 
@@ -147,4 +147,38 @@ example
 
 The time constant doesn't have any effect in the wheel.  
   
-  
+### calculations
+It is possible to do calculations to determine the position. this is done at the load time of the theme. 
+There is a set of variables that are usable:
+ * %
+ * screenw
+ * screenh
+ * width
+ * height
+
+The screenw/h give the screen size in pixels
+The width and height are the size of the current texture / video / wheel image
+% is a percentage of a relevant value.
+in horizontal axises size.x, displacement.x, translate.x the screenw variable is %.
+in vertical axixes size.y, displacement.y, translate.y the screenh variable is %.
+for opacity, 1.0 is %.
+for rotation 360 is %.
+
+the % can be used as follows:
+40%, 5.1%, 50.4444%, 100%
+
+the % and other variables are usable in
+ * size*
+ * translate
+ * displacement
+ * rotation
+ * opacity
+ 
+*size doesn't have the width and height variables (for size are those variables, thus initialized after)
+
+example
+
+            {"id": "0", "size":["10%", "10%"], "translate":["screenw - (width / 2) - 10", "100% - (width / 2.0) - 10"], "time": "500"}
+
+##### note
+using variables that are not set in the theme file might lead to undefined behaviour

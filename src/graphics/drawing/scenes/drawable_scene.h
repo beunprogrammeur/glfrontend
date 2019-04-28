@@ -27,7 +27,7 @@ public:
     void update(GLfloat dt);
 
     void selectedIndex(int index) { m_selectedIndex = index; }
-
+    void addAction(const std::string& id, actions::Action* action) override;
 };
 
 } // namespace scenes

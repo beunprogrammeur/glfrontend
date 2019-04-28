@@ -20,8 +20,12 @@ private:
 
 public:
     DrawableAction();
+
     inline void origin(Dimensions dimensions)
     { m_origin = dimensions; }
+
+    inline Dimensions dimensions()
+    { return m_dimensions; }
 
     inline void dimensions(Dimensions dimensions)
     { m_dimensions = dimensions; }
