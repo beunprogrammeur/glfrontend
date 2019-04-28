@@ -19,6 +19,7 @@ private:
     graphics::drawing::Dimensions m_origin;
 
 public:
+    DrawableAction();
     inline void origin(Dimensions dimensions)
     { m_origin = dimensions; }
 

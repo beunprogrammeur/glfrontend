@@ -17,8 +17,8 @@ struct Dimensions {
 
 public:
     static constexpr GLfloat kPositionDefault = INT_MIN;
-    static constexpr GLfloat kOpacityDefault = 1.0f;
-    static constexpr GLfloat kAngleDefault = 0.0f;
+    static constexpr GLfloat kOpacityDefault = INT_MIN;
+    static constexpr GLfloat kAngleDefault = INT_MIN;
     static constexpr GLfloat kSizeDefault = INT_MIN;
     static constexpr GLfloat kDisplacementDefault = 0.0f;
 

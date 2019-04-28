@@ -16,7 +16,8 @@ DrawableScene::DrawableScene(const std::string &name, const std::string &resourc
           , m_dimensions()
           , m_selectedIndex(0)
 {
-
+    m_dimensions.opacity = 1.0f;
+    m_dimensions.angle = 0.0f;
 }
 
 void DrawableScene::draw(graphics::textures::Renderer &renderer, graphics::resources::Resource* resource)

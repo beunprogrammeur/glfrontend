@@ -8,6 +8,18 @@ namespace graphics {
 namespace drawing {
 namespace actions {
 
+DrawableAction::DrawableAction()
+    : Action()
+    , m_dimensions()
+    , m_origin()
+{
+    m_dimensions.angle = 0.0f;
+    m_dimensions.opacity = 1.0f;
+
+    m_origin.angle = 0.0f;
+    m_origin.opacity = 1.0f;
+}
+
 void DrawableAction::update(Dimensions &target, GLfloat dt)
 {
     elapseTime(dt);

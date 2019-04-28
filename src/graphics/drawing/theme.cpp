@@ -136,18 +136,18 @@ Dimensions Theme::jsonToDimensions(const rapidjson::Value& json)
 {
 
     std::string targetdeg = filesystem::file::getString(json, "rotation");
-    std::string targetOpacity = filesystem::file::getString(json, "rotation");
+    std::string targetOpacity = filesystem::file::getString(json, "opacity");
     std::string displacement[2] = {""};
     std::string translate[2] = {""};
     std::string size[2] = {""};
 
 
     if (targetdeg.empty()) {
-        targetdeg = std::to_string(Dimensions::kAngleDefault);
+        targetdeg = "0.0";
     }
 
     if (targetOpacity.empty()) {
-        targetOpacity = std::to_string(Dimensions::kOpacityDefault);
+        targetOpacity = "1.0";
     }
 
 
