@@ -27,6 +27,7 @@ private:
 
 public:
     explicit Resource(const std::string& name, Type type);
+    virtual ~Resource() = default;
 
     const std::string& name() const { return m_name; }
     Resource::Type type() const { return m_type; }

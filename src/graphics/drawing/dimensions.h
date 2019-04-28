@@ -20,12 +20,11 @@ public:
     static constexpr GLfloat kOpacityDefault = 1.0f;
     static constexpr GLfloat kAngleDefault = 0.0f;
     static constexpr GLfloat kSizeDefault = INT_MIN;
-    static constexpr GLfloat kMarginDefault = 0.0f;
-
+    static constexpr GLfloat kDisplacementDefault = 0.0f;
 
     glm::vec2 position;
     glm::vec2 size;
-    glm::vec2 margin;
+    glm::vec2 displacement;
     GLfloat angle;
     GLfloat opacity;
 

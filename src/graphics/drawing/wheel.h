@@ -1,5 +1,6 @@
 #ifndef GRAPHICS_DRAWING_WHEEL_H
 #define GRAPHICS_DRAWING_WHEEL_H
+
 #include <vector>
 #include <cmath>
 
@@ -16,49 +17,46 @@
 #include "filesystem/file.h"
 #include "graphics/drawing/dimensions.h"
 
-namespace graphics
-{
-namespace drawing
-{
+namespace graphics {
+namespace drawing {
+namespace wheel {
 
-class Wheel
-{
-private:
-    int m_drawCount;
-    graphics::drawing::Dimensions m_selectedItemDimensions;
-
-public:
-    Wheel();
-
-    template <typename implements_drawable> void draw(graphics::textures::Renderer& renderer,const std::vector<implements_drawable*>& drawables, int selectedIndex);
-
-    inline int  drawCount()    const { return m_drawCount;    }
-    inline void drawCount(int count) { m_drawCount = count;   }
-    inline Dimensions& dimensions()  { return m_selectedItemDimensions; }
-};
+//template <typename implements_drawable> void draw(graphics::textures::Renderer& renderer,const std::vector<implements_drawable*>& drawables, int selectedIndex);
 
 
-template <typename implements_drawable>
-void Wheel::draw(graphics::textures::Renderer& renderer, const std::vector<implements_drawable*>& drawables, int selectedIndex)
+
+template<typename implements_drawable>
+void draw(graphics::textures::Renderer &renderer, Dimensions selectedPos,
+          const std::vector<implements_drawable *> &drawables, int selectedIndex)
 {
     int count = drawables.size();
-    if(count == 0)
-    {
+    if (count == 0 || (selectedPos.displacement.x == 0 && selectedPos.displacement.y == 0)) {
         return;
     }
 
-    int screenWidth  = arcade::settings::screen::width();
+    int screenWidth = arcade::settings::screen::width();
     int screenHeight = arcade::settings::screen::height();
 
-    // make a copy for the current instance
-    auto dim = m_selectedItemDimensions;
 
-    /**-- from here on the new version --**/
+
+    // make a copy for the current instance
+    auto dim = selectedPos;
+
+    if (dim.position.x < 0 || dim.position.x > screenWidth || dim.position.y < 0 || dim.position.y > screenHeight) {
+        return;
+    }
+
+
+    if (dim.displacement.x < 0) { dim.displacement.x = -dim.displacement.x; }
+    if (dim.displacement.y < 0) { dim.displacement.y = -dim.displacement.y; }
+
+
     int index = selectedIndex;
-    while(dim.position.y + dim.size.y + dim.margin.y > 0)
-    {
-        dim.position.y -= dim.size.y + dim.margin.y;
-        index = (index-1) % count;
+    while (dim.position.y > 0 &&
+           dim.position.x > 0) {
+        dim.position.y -= dim.displacement.y;
+        dim.position.x -= dim.displacement.x;
+        index--;
     }
 
     // make sure that the index is an item in the list and not out of bounds
@@ -66,28 +64,25 @@ void Wheel::draw(graphics::textures::Renderer& renderer, const std::vector<imple
     // compensate for the upcoming modulo
     index--;
 
-    if(index < 0)
-    {
+    if (index < 0) {
         index *= -1;
         index = count - index;
     }
 
-    while(dim.position.y < screenHeight)
-    {
+    while (dim.position.x - (dim.size.x / 2.0f) < screenWidth &&
+           dim.position.y - (dim.size.y / 2.0f) < screenHeight) {
         index = (index + 1) % count;
-        Drawable* drawable = reinterpret_cast<Drawable*>(drawables[index]);
-        
-        if(!drawable->texture().loaded())
-        {
+        auto *drawable = static_cast<Drawable *>(drawables[index]);
+        if (!drawable->texture().loaded()) {
             filesystem::file::openTexture(drawable->texturePath(), drawable->texture());
         }
 
         renderer.draw(drawable->texture(), dim.position, dim.size);
-        dim.position.y += dim.margin.y + dim.size.y;
+        dim.position += dim.displacement;
     }
 }
 
-
+} // namespace wheel
 } // namespace drawing
 } // namespace graphics
 

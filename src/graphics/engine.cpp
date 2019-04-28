@@ -19,7 +19,6 @@ Engine::Engine(const GLuint width, const GLuint height)
           , m_systemManager()
           , m_gameRunning(false)
           , m_gamePid(0)
-          , m_wheel()
           , m_buttons()
           , m_bgColor(glm::vec4(0.5f, 0.5f, 0.5f, 1.0f))
 {
@@ -48,19 +47,21 @@ void Engine::init()
 
 
     // these variables will be set by the theme manager in the future
-    auto& dimensions = m_wheel.dimensions();
-    dimensions.size.x = 200;
-    dimensions.size.y = 100;
-    dimensions.margin.x = 10;
-    dimensions.margin.y = 10;
-    dimensions.position.x = arcade::settings::screen::width() - (dimensions.size.x / 2.0f) - dimensions.margin.x;
-    dimensions.position.y = arcade::settings::screen::height() - (dimensions.size.y / 2.0f) - dimensions.margin.y - ((dimensions.size.y + dimensions.margin.y) *2);
+    //auto& dimensions = m_wheel.dimensions();
+    //int margin = 10;
+    //dimensions.size.x = 150;
+    //dimensions.size.y = 75;
+    //dimensions.position.x = arcade::settings::screen::width() - (dimensions.size.x / 2.0f) - margin;
+    //dimensions.position.y = arcade::settings::screen::height() - (dimensions.size.y / 2.0f) - margin - ((dimensions.size.y + margin) *2);
+    //dimensions.displacement.x = -(dimensions.size.x * 0.33f);
+    //dimensions.displacement.y = -(dimensions.size.y + margin);
 
+    // load game systems list (and propagate them)
     m_systemManager.load();
 
 
-    m_theme.load("./data/theme.json", m_bgColor);
 
+    m_theme.load("./data/theme.json", m_bgColor, m_systemManager.systems());
 
     initInputs();
 }
@@ -111,23 +112,24 @@ void Engine::draw()
     glClearColor(m_bgColor.r, m_bgColor.g, m_bgColor.b, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT);
 
+    // TODO: draw wheel from within the theme (makes support for layering better
     m_theme.draw(*m_renderer);
 
 
 
-    if (m_systemManager.hasSelected()) {
-        // draw game wheel
-        m_wheel.draw(*m_renderer, m_systemManager.activeSystem()->games(), m_systemManager.activeSystem()->index());
-    }
-    else {
-        // draw system wheel
-        m_wheel.draw(*m_renderer, m_systemManager.systems(), m_systemManager.index());
-    }
+    //if (m_systemManager.hasSelected()) {
+    //    // draw game wheel
+    //    drawing::wheel::draw(*m_renderer, SOME_POSITION, m_systemManager.activeSystem()->games(), m_systemManager.activeSystem()->index());
+    //}
+    //else {
+    //    // draw system wheel
+    //    drawing::wheel::draw(*m_renderer, SOME_POSITION, m_systemManager.systems(), m_systemManager.index());
+    //}
 }
 
 void Engine::update(GLfloat dt)
 {
-    m_theme.update(dt, m_bgColor, m_wheel.dimensions());
+    m_theme.update(dt, m_bgColor);
 }
 
 void Engine::processInputs(GLfloat dt)

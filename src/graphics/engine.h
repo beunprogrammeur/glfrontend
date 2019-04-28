@@ -35,7 +35,6 @@ private:
     arcade::GameSystemManager m_systemManager;
     bool m_gameRunning;
     int m_gamePid;
-    graphics::drawing::Wheel m_wheel;
     std::map<std::string, input::Button> m_buttons;
     graphics::drawing::Theme m_theme;
     glm::vec4 m_bgColor;

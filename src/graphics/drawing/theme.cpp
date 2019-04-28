@@ -3,16 +3,13 @@
 
 #include "arcade/settings.h"
 
-#include "filesystem/file.h"
-#include "filesystem/path.h"
-
-#include <iostream>
-#include <sstream>
 #include <regex>
-#include <algorithm>
-#include <graphics/resources/bgcolor_resource.h>
-#include <graphics/drawing/actions/bgcolor_action.h>
+#include <sstream>
+#include <iostream>
+
+#include "graphics/drawing/actions/bgcolor_action.h"
 #include "graphics/drawing/scenes/drawable_scene.h"
+#include "wheel.h"
 
 namespace graphics {
 namespace drawing {
@@ -26,107 +23,12 @@ Theme::Theme()
 
 Theme::~Theme()
 {
-    for (auto ptr : m_resources) {
-        delete ptr.second;
+    for(auto pair : m_resources) {
+        delete pair.second;
     }
 
     for (auto ptr : m_scenes) {
         delete ptr;
-    }
-}
-
-void Theme::load(const std::string &path, glm::vec4 &bgcolor)
-{
-    rapidjson::Document d;
-    if (!filesystem::file::readJson(path, d)) {
-        return;
-    }
-
-    if (!d.IsObject()) {
-        m_debug.error("malformed theme file. document is not an object");
-        return;
-    }
-
-    std::string jsonRoot = filesystem::path::getPathWithoutFileName(path);
-
-
-    if (!d.HasMember("resources")) {
-        m_debug.warn("loading theme without resources");
-    }
-    else if (!d["resources"].IsArray()) {
-        m_debug.error("malformed theme file. 'resources' is not an array");
-    }
-    else {
-        auto resources = d["resources"].GetArray();
-        for (auto &r : resources) {
-            loadResource(jsonRoot, r, bgcolor);
-        }
-    }
-
-    if (!d.HasMember("scenes")) {
-        m_debug.warn("loading theme without scenes");
-    }
-    else if (!d["resources"].IsArray()) {
-        m_debug.error("malformed theme file. 'scenes' is not an array");
-    }
-    else {
-        auto scenes = d["scenes"].GetArray();
-        for (auto &scene : scenes) {
-            loadScene(scene);
-        }
-    }
-
-    m_debug.print("loading theme complete");
-}
-
-void Theme::loadResource(const std::string &jsonRoot, const rapidjson::Value &resource, glm::vec4 &bgcolor)
-{
-    std::string name = filesystem::file::getString(resource, "name");
-    std::string type = filesystem::file::getString(resource, "type");
-    std::string path = filesystem::file::getString(resource, "path");
-
-    std::vector<std::string> types{
-            "texture",
-            "video",
-            "sfx",
-            "wheel"
-    };
-
-    if (name.length() == 0) {
-        m_debug.error("resource without name. discarding resource");
-        return;
-    }
-
-    if (type.compare("texture") != 0 && std::find(types.begin(), types.end(), type) != types.end()) {
-        m_debug.warn("type '", type, "' found but is not yet implemented. discarding resource.");
-        return;
-    }
-
-
-    if (type.compare("bgcolor") != 0 && type.compare("wheel") != 0 && path.length() == 0) {
-        m_debug.error("resource '", name, "' has no path. discarding resource");
-        return;
-    }
-
-
-    if (type.compare("texture") == 0) {
-        path = filesystem::path::concat(jsonRoot, path);
-        graphics::resources::TextureResource *texResource = new graphics::resources::TextureResource(path, name);
-        texResource->load();
-        if (!texResource->isLoaded()) {
-            delete texResource;
-            m_debug.error("resource '", path, "' failed to load from disk. discarding resource");
-        }
-        else {
-            m_resources[name] = texResource;
-        }
-    }
-    else if (type.compare("bgcolor") == 0) {
-        graphics::resources::BGColorResource *bgColorResource = new graphics::resources::BGColorResource(name, bgcolor);
-        m_resources[name] = bgColorResource;
-    }
-    else {
-        m_debug.error("resource with unknown type '", type, "'. discarding resource");
     }
 }
 
@@ -164,7 +66,8 @@ void Theme::loadScene(const rapidjson::Value &scene)
     auto actions = scene["actions"].GetArray();
     switch (m_resources[resource]->type()) {
         case graphics::resources::Resource::Type::Texture:
-        case graphics::resources::Resource::Type::Video: {
+        case graphics::resources::Resource::Type::Video:
+        case graphics::resources::Resource::Type::Wheel: {
             myScene = new scenes::DrawableScene(name, resource);
             for (auto &action : actions) {
                 loadDrawableAction(*myScene, action);
@@ -201,10 +104,6 @@ void Theme::loadDrawableAction(scenes::Scene &scene, const rapidjson::Value &act
 
     std::string time = filesystem::file::getString(action, "time");
     std::string next = filesystem::file::getString(action, "next");
-    std::string targetdeg = filesystem::file::getString(action, "rotation");
-    std::string targetOpacity = filesystem::file::getString(action, "rotation");
-    std::string translate[2] = {""};
-    std::string size[2] = {""};
 
 
     if (time.empty()) {
@@ -216,32 +115,12 @@ void Theme::loadDrawableAction(scenes::Scene &scene, const rapidjson::Value &act
         next = id;
     }
 
-    if (targetdeg.empty()) {
-        targetdeg = "0";
-    }
 
-    if (targetOpacity.empty()) {
-        targetOpacity = "1.0";
-    }
-
-    filesystem::file::getArray(action, "translate", translate, sizeof(translate), "-2147483648");
-    filesystem::file::getArray(action, "size", size, sizeof(size), "-2147483648");
-    Dimensions dimensions;
+    GLfloat durationMs = convertUnitToNumber(time, 0, ConversionScale::None);
 
 
-    dimensions.position.x = convertUnitToNumber(translate[0], Dimensions::kPositionDefault,
-                                                ConversionScale::HorizontalPixels);
-    dimensions.position.y = convertUnitToNumber(translate[1], Dimensions::kPositionDefault,
-                                                ConversionScale::VerticalPixels);
-    dimensions.size.x = convertUnitToNumber(size[0], Dimensions::kSizeDefault, ConversionScale::HorizontalPixels);
-    dimensions.size.y = convertUnitToNumber(size[1], Dimensions::kSizeDefault, ConversionScale::VerticalPixels);
-    dimensions.angle = convertUnitToNumber(targetdeg, Dimensions::kAngleDefault, ConversionScale::None);
-    dimensions.opacity = convertUnitToNumber(targetOpacity, Dimensions::kOpacityDefault, ConversionScale::None);
-    int durationMs = convertUnitToNumber(time, 0, ConversionScale::None);
-
-
-    actions::DrawableAction *myAction = new actions::DrawableAction;
-    myAction->dimensions(dimensions);
+    auto* myAction = new actions::DrawableAction;
+    myAction->dimensions(jsonToDimensions(action));
     myAction->duration(durationMs);
     myAction->resetTime();
     myAction->next(next);
@@ -251,6 +130,54 @@ void Theme::loadDrawableAction(scenes::Scene &scene, const rapidjson::Value &act
     }
 
     scene.addAction(id, myAction);
+}
+
+Dimensions Theme::jsonToDimensions(const rapidjson::Value& json)
+{
+
+    std::string targetdeg = filesystem::file::getString(json, "rotation");
+    std::string targetOpacity = filesystem::file::getString(json, "rotation");
+    std::string displacement[2] = {""};
+    std::string translate[2] = {""};
+    std::string size[2] = {""};
+
+
+    if (targetdeg.empty()) {
+        targetdeg = std::to_string(Dimensions::kAngleDefault);
+    }
+
+    if (targetOpacity.empty()) {
+        targetOpacity = std::to_string(Dimensions::kOpacityDefault);
+    }
+
+
+    filesystem::file::getArray(json, "translate", translate, sizeof(translate),
+            std::to_string(Dimensions::kPositionDefault));
+    filesystem::file::getArray(json, "size", size, sizeof(size),
+            std::to_string(Dimensions::kPositionDefault));
+    filesystem::file::getArray(json, "displacement", displacement, sizeof(displacement),
+            std::to_string(Dimensions::kDisplacementDefault));
+
+    Dimensions dimensions;
+
+    dimensions.position.x = convertUnitToNumber(translate[0],
+            Dimensions::kPositionDefault, ConversionScale::HorizontalPixels);
+    dimensions.position.y = convertUnitToNumber(translate[1],
+            Dimensions::kPositionDefault, ConversionScale::VerticalPixels);
+    dimensions.size.x = convertUnitToNumber(size[0],
+            Dimensions::kSizeDefault, ConversionScale::HorizontalPixels);
+    dimensions.size.y = convertUnitToNumber(size[1],
+            Dimensions::kSizeDefault, ConversionScale::VerticalPixels);
+    dimensions.angle = convertUnitToNumber(targetdeg,
+            Dimensions::kAngleDefault, ConversionScale::None);
+    dimensions.opacity = convertUnitToNumber(targetOpacity,
+            Dimensions::kOpacityDefault, ConversionScale::None);
+    dimensions.displacement.x = convertUnitToNumber(displacement[0],
+            Dimensions::kDisplacementDefault, ConversionScale::HorizontalPixels);
+    dimensions.displacement.y = convertUnitToNumber(displacement[1],
+            Dimensions::kDisplacementDefault, ConversionScale::VerticalPixels);
+
+    return dimensions;
 }
 
 void Theme::loadBGColorAction(scenes::Scene &scene, const rapidjson::Value &action)
@@ -301,7 +228,7 @@ void Theme::loadBGColorAction(scenes::Scene &scene, const rapidjson::Value &acti
 *  example 40px == 40 pixels
 *  example 4000 == 4000 pixels
 */
-GLfloat Theme::convertUnitToNumber(const std::string &unit, int defaultValue, ConversionScale scale)
+GLfloat Theme::convertUnitToNumber(const std::string &unit, GLfloat defaultValue, ConversionScale scale)
 {
     std::regex re("^([0-9.]+)(px|%)?");
     std::smatch match;
@@ -337,10 +264,10 @@ void Theme::draw(graphics::textures::Renderer &renderer)
 {
     for (auto &scene: m_scenes) {
         if (auto ptr = dynamic_cast<scenes::DrawableScene *>(scene)) {
-            ptr->draw(renderer, *static_cast<resources::DrawableResource *>(m_resources[ptr->resourceId()]));
+            ptr->draw(renderer, m_resources[ptr->resourceId()]);
         }
         else if (auto ptr = dynamic_cast<scenes::BGColorScene *>(scene)) {
-            ptr->draw(renderer, *static_cast<resources::BGColorResource *>(m_resources[ptr->resourceId()]));
+            ptr->draw(renderer, *dynamic_cast<resources::BGColorResource *>(m_resources[ptr->resourceId()]));
         }
         else {
             // unsupported type of scene
@@ -348,7 +275,7 @@ void Theme::draw(graphics::textures::Renderer &renderer)
     }
 }
 
-void Theme::update(GLfloat dt, glm::vec4 &bgColor, Dimensions &wheelDimensions)
+void Theme::update(GLfloat dt, glm::vec4 &bgColor)
 {
     for (auto scene : m_scenes) {
         scene->update(dt);

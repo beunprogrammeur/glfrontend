@@ -10,7 +10,7 @@ namespace drawing {
 Dimensions::Dimensions()
         : position(glm::vec2(kPositionDefault, kPositionDefault))
           , size(glm::vec2(kSizeDefault, kSizeDefault))
-          , margin(glm::vec2(kMarginDefault, kMarginDefault))
+          , displacement(glm::vec2(kDisplacementDefault, kDisplacementDefault))
           , angle(kAngleDefault)
           , opacity(kOpacityDefault)
 {

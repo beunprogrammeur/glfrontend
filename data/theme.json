@@ -8,16 +8,13 @@
 
     ],
     "scenes": [
-        { "name": "moving n64logo", "resource": "ball", "actions": [
-            {"id": "0", "size": ["100", "100"], "translate": ["100px","100px"], "time": "500", "next": "1"},
+        { "name": "moving ball", "resource": "ball", "actions": [
+            {"id": "0", "size": ["100", "100"], "translate": ["100px","50%"], "opacity":"1.0","time": "500", "next": "1"},
             {"id": "1", "time": "400", "next": "2"},
-            {"id": "2", "translate": ["50%", "50%"], "time":"500", "next": "3"},
+            {"id": "2", "translate": ["50%", "50%"], "opacity":"0.0","time":"500", "next": "3"},
             {"id": "3", "time": "400", "next": "0"}
         ]},
-        { "name":"nes logo move stop", "resource": "triangle", "actions": [
-            {"id":"topleft",    "size": ["200", "100"], "translate":["100px", "100px"], "time": "750", "next":"bottomleft"},
-            {"id":"bottomleft", "translate":["100px", "90%"], "time": "750", "next":"bottomleft"}
-        ]},
+
         { "name": "wheel selection backdrop", "resource": "selection_backdrop", "actions": [
             {"id": "0", "size": ["220px", "120px"], "translate": ["490px","320px"] }
         ]},
@@ -45,6 +42,13 @@
             {"id": "green", "color": ["0.0", "1.0", "0.0"], "time": "1500", "next": "blue"},
             {"id": "blue", "color": ["0.0", "0.0", "1.0"], "time": "1500", "next": "red"}
 
+        ]},
+        {"name":  "big ball", "resource": "ball", "actions": [
+            {"id": "initial", "size": ["30%", "30%"], "translate": ["50%", "50%"], "time": "1000", "next": "bstate"},
+            {"id": "bstate", "size": ["10%", "10%"], "translate": ["50%", "50%"], "time": "1000", "next": "initial"}
+        ]},
+        {"name": "www", "resource": "image_wheel", "actions": [
+            {"id": "initial_state", "size": ["200px", "100px"], "translate": ["50%","50%"], "displacement": ["210px", "0px"], "rotation": "45.0"}
 
         ]}
     ]

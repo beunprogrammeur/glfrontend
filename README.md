@@ -128,6 +128,23 @@ rotation is initialized with an angle of 0 degrees. if omitted it will not be ta
 opacity is initialized as 1.0f. the same rules as for rotation apply.
 
 
-   
+### wheel
+The wheel is drawable like any other sprite. the difference is that there is an extra property:
+"displacement".
+displacement is the relative distance to translate for the next image in the wheel.
+
+example
+
+           * (position)
+           |
+           |
+           |
+           +---------* (disposition)
+                     |
+                     |
+                     |
+                     +---------* (disposition)
+
+The time constant doesn't have any effect in the wheel.  
   
   
