@@ -8,14 +8,16 @@
 #include "filesystem/file.h"
 #include "filesystem/path.h"
 
-#include "graphics/resources/texture_resource.h"
 #include "graphics/textures/renderer.h"
-
-#include "debug/logger.h"
 
 #include <rapidjson/document.h>
 
+#include "debug/logger.h"
+#include "arcade/settings.h"
+#include "math/shuntingyard.h"
+
 #include "graphics/drawing/drawable.h"
+
 #include "graphics/drawing/dimensions.h"
 #include "graphics/drawing/scenes/bgcolor_scene.h"
 
@@ -33,6 +35,7 @@ private:
     std::map<std::string, graphics::resources::Resource*> m_resources;
     std::vector<scenes::Scene*> m_scenes;
     debug::Logger m_debug;
+    math::shuntingyard::Calculator m_calculator;
 
     enum class ConversionScale
     {
@@ -46,10 +49,11 @@ private:
     void loadResource(const std::string &jsonRoot, const rapidjson::Value &resource, glm::vec4 &bgcolor, const std::vector<drawable*>& wheel);
 
     void loadScene(const rapidjson::Value& scene);
-    void loadDrawableAction(scenes::Scene& scene, const rapidjson::Value& action);
-    void loadBGColorAction(scenes::Scene& scene, const rapidjson::Value& action);
+    void loadDrawableAction(scenes::Scene& scene, const rapidjson::Value& action, const std::string& name);
+    void loadBGColorAction(scenes::Scene& scene, const rapidjson::Value& action, const std::string& name);
     static GLfloat convertUnitToNumber(const std::string& unit, GLfloat defaultValue = INT_MIN, ConversionScale scale = ConversionScale::None);
-    Dimensions jsonToDimensions(const rapidjson::Value& json);
+    Dimensions jsonToDimensions(const rapidjson::Value& json, const std::string& name);
+    void dimensionsVariableAssignment(float& output, std::string& expression, const std::string& variableName, float defaultValue);
 public:
      Theme();
     ~Theme();
@@ -76,6 +80,9 @@ void Theme::load(const std::string &path, glm::vec4 &bgcolor, const std::vector<
     }
 
     std::string jsonRoot = filesystem::path::getPathWithoutFileName(path);
+
+    m_calculator.setVariable("screenw", arcade::settings::screen::width());
+    m_calculator.setVariable("screenh", arcade::settings::screen::height());
 
 
     if (!d.HasMember("resources")) {

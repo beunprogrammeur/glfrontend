@@ -8,13 +8,16 @@
 
     ],
     "scenes": [
-        { "name": "wheel selection backdrop", "resource": "selection_backdrop", "actions": [
-            {"id": "0", "size": ["220", "120"], "opacity": "1", "time":"500","translate": ["screenw - (width / 2) -10","320"], "next": "secondary_state"},
-            {"id": "secondary_state", "opacity": "0", "time": "500", "next": "0"}
+        {"name": "background_color", "resource": "background", "actions": [
+            {"id": "init", "color": ["1.0", "0.8", "0.5"]}
+        ]},
+        { "name": "wheel_backdrop", "resource": "selection_backdrop", "actions": [
+            {"id": "init", "size": ["220", "120"], "opacity": "1", "time":"500","translate": ["100%-width/2+10","50%"], "next": "secondary_state"},
+            {"id": "secondary_state", "opacity": "0", "time": "500", "next": "init"}
         ]},
 
-        {"name": "www", "resource": "image_wheelss", "actions": [
-            {"id": "initial_state", "size": ["200", "100"], "translate": ["50%","20%"], "displacement": ["210", "0"]}
+        {"name": "www", "resource": "image_wheel", "actions": [
+            {"id": "initial_state", "size": ["wheel_backdrop.init.size.x - 20", "wheel_backdrop.init.size.y - 20"], "translate": ["wheel_backdrop.init.translate.x","wheel_backdrop.init.translate.y"], "displacement": ["0", "height+10"]}
         ]}
 
     ]

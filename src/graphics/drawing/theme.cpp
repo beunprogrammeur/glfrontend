@@ -40,7 +40,8 @@ void Theme::loadScene(const rapidjson::Value &scene)
     std::string resource = filesystem::file::getString(scene, "resource");
 
     if (name.empty()) {
-        m_debug.warn("found scene without name");
+        m_debug.error("found scene without name. this clashes with variables. discarding");
+        return;
     }
 
     if (resource.empty()) {
@@ -72,14 +73,14 @@ void Theme::loadScene(const rapidjson::Value &scene)
         case graphics::resources::Resource::Type::Wheel: {
             myScene = new scenes::DrawableScene(name, resource);
             for (auto &action : actions) {
-                loadDrawableAction(*myScene, action);
+                loadDrawableAction(*myScene, action, name);
             }
         }
             break;
         case graphics::resources::Resource::Type::BGColor: {
             myScene = new scenes::BGColorScene(name, resource);
             for (auto &action : actions) {
-                loadBGColorAction(*myScene, action);
+                loadBGColorAction(*myScene, action, name);
             }
         }
             break;
@@ -96,7 +97,7 @@ void Theme::loadScene(const rapidjson::Value &scene)
     m_scenes.push_back(myScene);
 }
 
-void Theme::loadDrawableAction(scenes::Scene &scene, const rapidjson::Value &action)
+void Theme::loadDrawableAction(scenes::Scene &scene, const rapidjson::Value &action, const std::string& name)
 {
     std::string id = filesystem::file::getString(action, "id");
     if (id.empty()) {
@@ -112,17 +113,23 @@ void Theme::loadDrawableAction(scenes::Scene &scene, const rapidjson::Value &act
         time = "0";
     }
 
-    if (next.empty()) {
+    if (next.empty() && id != "kill") {
         // this is considered the last action, loop to self
+        // id == kill is used for a dying theme (the last thing an animating thing can do before the theme is removed
         next = id;
     }
 
 
-    GLfloat durationMs = convertUnitToNumber(time, 0, ConversionScale::None);
 
+    GLfloat durationMs = convertUnitToNumber(time, 0, ConversionScale::None);
+    if(id == "kill" && durationMs > 1000.0f)
+    {
+        durationMs = 1000.0f;
+        m_debug.warn("the kill action has a timelimit of 1000ms");
+    }
 
     auto *myAction = new actions::DrawableAction;
-    myAction->dimensions(jsonToDimensions(action));
+    myAction->dimensions(jsonToDimensions(action, name + "." + id));
     myAction->duration(durationMs);
     myAction->resetTime();
     myAction->next(next);
@@ -134,7 +141,7 @@ void Theme::loadDrawableAction(scenes::Scene &scene, const rapidjson::Value &act
     scene.addAction(id, myAction);
 }
 
-Dimensions Theme::jsonToDimensions(const rapidjson::Value &json)
+Dimensions Theme::jsonToDimensions(const rapidjson::Value &json, const std::string& name)
 {
 
     std::string targetdeg = filesystem::file::getString(json, "rotation");
@@ -161,93 +168,50 @@ Dimensions Theme::jsonToDimensions(const rapidjson::Value &json)
                                std::to_string(Dimensions::kDisplacementDefault));
 
     Dimensions dimensions;
-/*
-    dimensions.position.x = convertUnitToNumber(translate[0],
-            Dimensions::kPositionDefault, ConversionScale::HorizontalPixels);
-    dimensions.position.y = convertUnitToNumber(translate[1],
-            Dimensions::kPositionDefault, ConversionScale::VerticalPixels);
-    dimensions.size.x = convertUnitToNumber(size[0],
-            Dimensions::kSizeDefault, ConversionScale::HorizontalPixels);
-    dimensions.size.y = convertUnitToNumber(size[1],
-            Dimensions::kSizeDefault, ConversionScale::VerticalPixels);
-    dimensions.angle = convertUnitToNumber(targetdeg,
-            Dimensions::kAngleDefault, ConversionScale::None);
-    dimensions.opacity = convertUnitToNumber(targetOpacity,
-            Dimensions::kOpacityDefault, ConversionScale::None);
-    dimensions.displacement.x = convertUnitToNumber(displacement[0],
-            Dimensions::kDisplacementDefault, ConversionScale::HorizontalPixels);
-    dimensions.displacement.y = convertUnitToNumber(displacement[1],
-            Dimensions::kDisplacementDefault, ConversionScale::VerticalPixels);
-*/
-    std::map<std::string, float> variables = {
-            {"screenw", arcade::settings::screen::width()},
-            {"screenh", arcade::settings::screen::height()}
-    };
 
-    if (size[0].empty()) {
-        dimensions.size.x = Dimensions::kSizeDefault;
-        dimensions.size.y = Dimensions::kSizeDefault;
+    m_calculator.setHundredPercentByVariableName("screenw");
+    dimensionsVariableAssignment(dimensions.size.x, size[0], name + ".size.x", Dimensions::kSizeDefault);
+    m_calculator.setVariable("width", dimensions.size.x);
 
-    }
-    else if (size[1].empty()) {
-        dimensions.size.x = math::shuntingyard::calc(size[0], variables["screenw"], variables);
-        dimensions.size.y = dimensions.size.y;
-    }
-    else {
-        dimensions.size.x = math::shuntingyard::calc(size[0], variables["screenw"], variables);
-        dimensions.size.y = math::shuntingyard::calc(size[1], variables["screenw"], variables);
-
-    }
-
-    variables["width"] = dimensions.size.x;
-    variables["height"] = dimensions.size.y;
-
-    if (translate[0].empty()) {
-        dimensions.position.x = Dimensions::kPositionDefault;
-        dimensions.position.y = dimensions.position.x;
-    }
-    else if (translate[1].empty()) {
-        dimensions.position.x = math::shuntingyard::calc(translate[0], variables["screenw"], variables);
-        dimensions.position.y = dimensions.position.x;
-    }
-    else {
-        dimensions.position.x = math::shuntingyard::calc(translate[0], variables["screenw"], variables);
-        dimensions.position.y = math::shuntingyard::calc(translate[1], variables["screenh"], variables);
-    }
+    m_calculator.setHundredPercentByVariableName("screenh");
+    dimensionsVariableAssignment(dimensions.size.y, size[1], name + ".size.y", Dimensions::kSizeDefault);
+    m_calculator.setVariable("height", dimensions.size.y);
 
 
-    if (displacement[0].empty()) {
-        dimensions.displacement.x = Dimensions::kDisplacementDefault;
-        dimensions.displacement.y = dimensions.displacement.x;
+    m_calculator.setHundredPercentByVariableName("screenw");
+    dimensionsVariableAssignment(dimensions.position.x, translate[0], name + ".translate.x", Dimensions::kPositionDefault);
 
-    }
-    else if (displacement[1].empty()) {
-        dimensions.displacement.x = math::shuntingyard::calc(displacement[0], variables["screenw"], variables);
-        dimensions.displacement.y = dimensions.displacement.x;
-    }
-    else {
-        dimensions.displacement.x = math::shuntingyard::calc(displacement[0], variables["screenw"], variables);
-        dimensions.displacement.y = math::shuntingyard::calc(displacement[0], variables["screenh"], variables);
-    }
+    m_calculator.setHundredPercentByVariableName("screenh");
+    dimensionsVariableAssignment(dimensions.position.y, translate[1], name + ".translate.y", Dimensions::kPositionDefault);
 
-    if (targetdeg.empty()) {
-        dimensions.angle = Dimensions::kAngleDefault;
-    }
-    else {
-        dimensions.angle = math::shuntingyard::calc(targetdeg, 360.0f, variables);
-    }
 
-    if (targetOpacity.empty()) {
-        dimensions.opacity = Dimensions::kOpacityDefault;
-    }
-    else {
-        dimensions.opacity = math::shuntingyard::calc(targetOpacity, 1.0f, variables);
-    }
+    m_calculator.setHundredPercentByVariableName("screenw");
+    dimensionsVariableAssignment(dimensions.displacement.x, displacement[0], name + ".displacement.x", Dimensions::kDisplacementDefault);
+
+    m_calculator.setHundredPercentByVariableName("screenh");
+    dimensionsVariableAssignment(dimensions.displacement.y, displacement[1], name + ".displacement.y", Dimensions::kDisplacementDefault);
+
+    m_calculator.setHundredPercent(360.0f);
+    dimensionsVariableAssignment(dimensions.angle, targetdeg, name + ".rotation", Dimensions::kAngleDefault);
+
+    m_calculator.setHundredPercent(1.0f);
+    dimensionsVariableAssignment(dimensions.opacity, targetOpacity, name + ".opacity", Dimensions::kOpacityDefault);
 
     return dimensions;
 }
 
-void Theme::loadBGColorAction(scenes::Scene &scene, const rapidjson::Value &action)
+
+void Theme::dimensionsVariableAssignment(float &output, std::string &expression, const std::string& variableName, float defaultValue)
+{
+    output = m_calculator.calculate(expression, defaultValue);
+    if(output != defaultValue)
+    {
+        m_calculator.setVariable(variableName, output);
+    }
+}
+
+
+void Theme::loadBGColorAction(scenes::Scene &scene, const rapidjson::Value &action, const std::string& name)
 {
     std::string id = filesystem::file::getString(action, "id");
     if (id.empty()) {
@@ -275,7 +239,7 @@ void Theme::loadBGColorAction(scenes::Scene &scene, const rapidjson::Value &acti
     GLfloat b = convertUnitToNumber(color[2], 0.0f, ConversionScale::None);
     int durationMs = convertUnitToNumber(time, 0, ConversionScale::None);
 
-    actions::BGColorAction *myAction = new actions::BGColorAction;
+    auto *myAction = new actions::BGColorAction;
     myAction->red(r);
     myAction->green(g);
     myAction->blue(b);
@@ -348,6 +312,7 @@ void Theme::update(GLfloat dt, glm::vec4 &bgColor)
         scene->update(dt);
     }
 }
+
 
 
 } // namespace drawing
