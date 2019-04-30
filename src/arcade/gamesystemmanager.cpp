@@ -37,6 +37,7 @@ void GameSystemManager::load()
 void GameSystemManager::select()
 {
     m_active = m_systems[m_index];
+    s_debug.print("selected: ", m_active->friendlyName());
     m_active->loadGames();
 }
 

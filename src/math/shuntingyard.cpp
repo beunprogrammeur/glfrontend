@@ -90,7 +90,6 @@ float Calculator::calculate(const std::string &formula, float defaultValue)
             continue;
         }
 
-
         // operate all grouped variables and operators between this bracket and the last one
         if (c[0] == ')') {
             while (!ops.empty() && ops.back() != '(') {

@@ -96,7 +96,6 @@ void Engine::initInputs()
         }
         else {
             m_systemManager.select();
-            std::cout << "selected" << m_systemManager.activeSystem()->friendlyName() << std::endl;
         }
     });
 
