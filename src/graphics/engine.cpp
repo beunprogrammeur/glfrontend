@@ -74,6 +74,7 @@ void Engine::initInputs()
         }
         else {
             m_systemManager.next();
+            m_theme.setWheelIndex(m_systemManager.index());
         }
     });
 
@@ -83,6 +84,7 @@ void Engine::initInputs()
         }
         else {
             m_systemManager.prev();
+            m_theme.setWheelIndex(m_systemManager.index());
         }
     });
 

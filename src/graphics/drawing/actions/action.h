@@ -5,9 +5,16 @@
 #include <glad/glad.h>
 
 
+
 namespace graphics {
 namespace drawing {
+
+namespace scenes{
+class Scene;
+}
+
 namespace actions {
+
 
 class Action
 {
@@ -22,7 +29,7 @@ private:
     int m_elapsedTime;
     int m_totalTime;
     std::string m_next; // id if the next action
-
+    scenes::Scene *m_parent;
 protected:
 
     UpdateFormula m_formula;
@@ -39,6 +46,9 @@ protected:
 
 public:
     Action();
+
+    inline void parent(scenes::Scene
+    * parent) { m_parent = parent; }
 
     inline const std::string &next() const
     { return m_next; }

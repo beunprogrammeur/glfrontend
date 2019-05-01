@@ -19,14 +19,12 @@ class DrawableScene : public Scene
 {
 private:
     graphics::drawing::Dimensions m_dimensions;
-    int m_selectedIndex;
 public:
     DrawableScene(const std::string& name, const std::string& resource);
     
     void draw(graphics::textures::Renderer &renderer, graphics::resources::Resource* resource);
     void update(GLfloat dt);
 
-    void selectedIndex(int index) { m_selectedIndex = index; }
     void addAction(const std::string& id, actions::Action* action) override;
 };
 

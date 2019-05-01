@@ -6,6 +6,7 @@
 #include "graphics/drawing/wheel.h"
 #include "graphics/resources/wheel_resource.h"
 #include "drawable_scene.h"
+#include "graphics/drawing/theme.h"
 
 namespace graphics {
 namespace drawing {
@@ -14,7 +15,6 @@ namespace scenes {
 DrawableScene::DrawableScene(const std::string &name, const std::string &resource)
         : Scene(name, resource)
           , m_dimensions()
-          , m_selectedIndex(0)
 {
     m_dimensions.opacity = 1.0f;
     m_dimensions.angle = 0.0f;
@@ -28,13 +28,15 @@ void DrawableScene::draw(graphics::textures::Renderer &renderer, graphics::resou
         auto* resGame = dynamic_cast<graphics::resources::WheelResource<arcade::Game>*>(resource);
         auto* resGameSys = dynamic_cast<graphics::resources::WheelResource<arcade::GameSystem>*>(resource);
 
+        int index = parent()->getWheelIndex();
+
         if(resGame != nullptr)
         {
-            graphics::drawing::wheel::draw(renderer, m_dimensions, resGame->drawables(), m_selectedIndex);
+            graphics::drawing::wheel::draw(renderer, m_dimensions, resGame->drawables(), index);
         }
         else if(resGameSys != nullptr)
         {
-            graphics::drawing::wheel::draw(renderer, m_dimensions, resGameSys->drawables(), m_selectedIndex);
+            graphics::drawing::wheel::draw(renderer, m_dimensions, resGameSys->drawables(), index);
         }
         else
         {

@@ -17,7 +17,7 @@
         ]},
 
         {"name": "www", "resource": "image_wheel", "actions": [
-            {"id": "initial_state", "size": ["wheel_backdrop.init.size.x - 20", "wheel_backdrop.init.size.y - 20"], "translate": ["wheel_backdrop.init.translate.x","wheel_backdrop.init.translate.y"], "displacement": ["0", "height+10"]}
+            {"id": "initial_state","size": ["wheel_backdrop.init.size.x - 20", "wheel_backdrop.init.size.y - 20"], "translate": ["wheel_backdrop.init.translate.x","wheel_backdrop.init.translate.y"], "displacement": ["0", "height+10"]}
         ]}
 
     ]

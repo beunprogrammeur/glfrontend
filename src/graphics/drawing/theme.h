@@ -25,17 +25,17 @@
 #include "graphics/resources/texture_resource.h"
 #include "graphics/resources/bgcolor_resource.h"
 
-namespace graphics
-{
-namespace drawing
-{
+namespace graphics {
+namespace drawing {
 class Theme
 {
 private:
-    std::map<std::string, graphics::resources::Resource*> m_resources;
-    std::vector<scenes::Scene*> m_scenes;
+    std::map<std::string, graphics::resources::Resource *> m_resources;
+    std::vector<scenes::Scene *> m_scenes;
     debug::Logger m_debug;
     math::shuntingyard::Calculator m_calculator;
+    int m_wheelIndex;
+    int m_oldWheelIndex;
 
     enum class ConversionScale
     {
@@ -46,28 +46,51 @@ private:
 
 
     template<typename drawable>
-    void loadResource(const std::string &jsonRoot, const rapidjson::Value &resource, glm::vec4 &bgcolor, const std::vector<drawable*>& wheel);
+    void loadResource(const std::string &jsonRoot, const rapidjson::Value &resource, glm::vec4 &bgcolor,
+                      const std::vector<drawable *> &wheel);
 
-    void loadScene(const rapidjson::Value& scene);
-    void loadDrawableAction(scenes::Scene& scene, const rapidjson::Value& action, const std::string& name);
-    void loadBGColorAction(scenes::Scene& scene, const rapidjson::Value& action, const std::string& name);
-    static GLfloat convertUnitToNumber(const std::string& unit, GLfloat defaultValue = INT_MIN, ConversionScale scale = ConversionScale::None);
-    Dimensions jsonToDimensions(const rapidjson::Value& json, const std::string& name);
-    void dimensionsVariableAssignment(float& output, std::string& expression, const std::string& variableName, float defaultValue);
+    void loadScene(const rapidjson::Value &scene);
+
+    void loadDrawableAction(scenes::Scene &scene, const rapidjson::Value &action, const std::string &name);
+
+    void loadBGColorAction(scenes::Scene &scene, const rapidjson::Value &action, const std::string &name);
+
+    static GLfloat convertUnitToNumber(const std::string &unit, GLfloat defaultValue = INT_MIN,
+                                       ConversionScale scale = ConversionScale::None);
+
+    Dimensions jsonToDimensions(const rapidjson::Value &json, const std::string &name);
+
+    void dimensionsVariableAssignment(float &output, std::string &expression, const std::string &variableName,
+                                      float defaultValue);
+
 public:
-     Theme();
+    Theme();
+
     ~Theme();
 
-    template <typename drawable>
-    void load(const std::string &path, glm::vec4 &bgcolor, const std::vector<drawable*>& wheel);
+    template<typename drawable>
+    void load(const std::string &path, glm::vec4 &bgcolor, const std::vector<drawable *> &wheel);
 
-    void draw(graphics::textures::Renderer& renderer);
-    void update(GLfloat dt, glm::vec4& bgColor);
+    void draw(graphics::textures::Renderer &renderer);
+
+    void update(GLfloat dt, glm::vec4 &bgColor);
+
+    inline void setWheelIndex(int index)
+    {
+        m_oldWheelIndex = m_wheelIndex;
+        m_wheelIndex = index;
+    }
+
+    inline int getWheelIndex()
+    { return m_wheelIndex; }
+
+    inline int getOldWheelIndex()
+    { return m_oldWheelIndex; }
 };
 
 
-template <typename drawable>
-void Theme::load(const std::string &path, glm::vec4 &bgcolor, const std::vector<drawable*>& wheel)
+template<typename drawable>
+void Theme::load(const std::string &path, glm::vec4 &bgcolor, const std::vector<drawable *> &wheel)
 {
     rapidjson::Document d;
     if (!filesystem::file::readJson(path, d)) {
@@ -115,7 +138,8 @@ void Theme::load(const std::string &path, glm::vec4 &bgcolor, const std::vector<
 }
 
 template<typename drawable>
-void Theme::loadResource(const std::string &jsonRoot, const rapidjson::Value &resource, glm::vec4 &bgcolor, const std::vector<drawable*>& wheel)
+void Theme::loadResource(const std::string &jsonRoot, const rapidjson::Value &resource, glm::vec4 &bgcolor,
+                         const std::vector<drawable *> &wheel)
 {
     std::string name = filesystem::file::getString(resource, "name");
     std::string type = filesystem::file::getString(resource, "type");
@@ -159,8 +183,7 @@ void Theme::loadResource(const std::string &jsonRoot, const rapidjson::Value &re
         auto *bgColorResource = new graphics::resources::BGColorResource(name, bgcolor);
         m_resources[name] = bgColorResource;
     }
-    else if (type == "wheel")
-    {
+    else if (type == "wheel") {
         auto *wheelResource = new graphics::resources::WheelResource<drawable>(name, wheel);
         m_resources[name] = wheelResource;
     }

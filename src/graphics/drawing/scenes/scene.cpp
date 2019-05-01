@@ -17,6 +17,7 @@ Scene::Scene(const std::string &name, const std::string &resource)
 void Scene::addAction(const std::string &id, actions::Action* action)
 {
     m_actions[id] = action;
+    action->parent(this);
     if (m_currentActionId.empty()) {
         m_currentActionId = id;
     }

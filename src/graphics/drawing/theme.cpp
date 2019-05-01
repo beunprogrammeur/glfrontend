@@ -94,10 +94,11 @@ void Theme::loadScene(const rapidjson::Value &scene)
         return;
     }
 
+    myScene->parent(this);
     m_scenes.push_back(myScene);
 }
 
-void Theme::loadDrawableAction(scenes::Scene &scene, const rapidjson::Value &action, const std::string& name)
+void Theme::loadDrawableAction(scenes::Scene &scene, const rapidjson::Value &action, const std::string &name)
 {
     std::string id = filesystem::file::getString(action, "id");
     if (id.empty()) {
@@ -120,10 +121,8 @@ void Theme::loadDrawableAction(scenes::Scene &scene, const rapidjson::Value &act
     }
 
 
-
     GLfloat durationMs = convertUnitToNumber(time, 0, ConversionScale::None);
-    if(id == "kill" && durationMs > 1000.0f)
-    {
+    if (id == "kill" && durationMs > 1000.0f) {
         durationMs = 1000.0f;
         m_debug.warn("the kill action has a timelimit of 1000ms");
     }
@@ -141,7 +140,7 @@ void Theme::loadDrawableAction(scenes::Scene &scene, const rapidjson::Value &act
     scene.addAction(id, myAction);
 }
 
-Dimensions Theme::jsonToDimensions(const rapidjson::Value &json, const std::string& name)
+Dimensions Theme::jsonToDimensions(const rapidjson::Value &json, const std::string &name)
 {
 
     std::string targetdeg = filesystem::file::getString(json, "rotation");
@@ -179,17 +178,21 @@ Dimensions Theme::jsonToDimensions(const rapidjson::Value &json, const std::stri
 
 
     m_calculator.setHundredPercentByVariableName("screenw");
-    dimensionsVariableAssignment(dimensions.position.x, translate[0], name + ".translate.x", Dimensions::kPositionDefault);
+    dimensionsVariableAssignment(dimensions.position.x, translate[0], name + ".translate.x",
+                                 Dimensions::kPositionDefault);
 
     m_calculator.setHundredPercentByVariableName("screenh");
-    dimensionsVariableAssignment(dimensions.position.y, translate[1], name + ".translate.y", Dimensions::kPositionDefault);
+    dimensionsVariableAssignment(dimensions.position.y, translate[1], name + ".translate.y",
+                                 Dimensions::kPositionDefault);
 
 
     m_calculator.setHundredPercentByVariableName("screenw");
-    dimensionsVariableAssignment(dimensions.displacement.x, displacement[0], name + ".displacement.x", Dimensions::kDisplacementDefault);
+    dimensionsVariableAssignment(dimensions.displacement.x, displacement[0], name + ".displacement.x",
+                                 Dimensions::kDisplacementDefault);
 
     m_calculator.setHundredPercentByVariableName("screenh");
-    dimensionsVariableAssignment(dimensions.displacement.y, displacement[1], name + ".displacement.y", Dimensions::kDisplacementDefault);
+    dimensionsVariableAssignment(dimensions.displacement.y, displacement[1], name + ".displacement.y",
+                                 Dimensions::kDisplacementDefault);
 
     m_calculator.setHundredPercent(360.0f);
     dimensionsVariableAssignment(dimensions.angle, targetdeg, name + ".rotation", Dimensions::kAngleDefault);
@@ -201,17 +204,17 @@ Dimensions Theme::jsonToDimensions(const rapidjson::Value &json, const std::stri
 }
 
 
-void Theme::dimensionsVariableAssignment(float &output, std::string &expression, const std::string& variableName, float defaultValue)
+void Theme::dimensionsVariableAssignment(float &output, std::string &expression, const std::string &variableName,
+                                         float defaultValue)
 {
     output = m_calculator.calculate(expression, defaultValue);
-    if(output != defaultValue)
-    {
+    if (output != defaultValue) {
         m_calculator.setVariable(variableName, output);
     }
 }
 
 
-void Theme::loadBGColorAction(scenes::Scene &scene, const rapidjson::Value &action, const std::string& name)
+void Theme::loadBGColorAction(scenes::Scene &scene, const rapidjson::Value &action, const std::string &name)
 {
     std::string id = filesystem::file::getString(action, "id");
     if (id.empty()) {
@@ -221,7 +224,6 @@ void Theme::loadBGColorAction(scenes::Scene &scene, const rapidjson::Value &acti
 
     std::string time = filesystem::file::getString(action, "time");
     std::string next = filesystem::file::getString(action, "next");
-
 
     if (time.empty()) {
         time = "0";
@@ -312,7 +314,6 @@ void Theme::update(GLfloat dt, glm::vec4 &bgColor)
         scene->update(dt);
     }
 }
-
 
 
 } // namespace drawing
