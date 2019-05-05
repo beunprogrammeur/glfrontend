@@ -146,7 +146,12 @@ std::string getString(const rapidjson::Value& json, const std::string& key, cons
         return defaultValue;
     }
 
-    return json[key.c_str()].GetString();
+    auto output = std::string(json[key.c_str()].GetString());
+    if(output.empty()) {
+        return defaultValue;
+    }
+
+    return output;
 }
 
 bool getArray(const rapidjson::Value& json, const std::string& key, std::string arr[], const int size, const std::string& defaultValue)

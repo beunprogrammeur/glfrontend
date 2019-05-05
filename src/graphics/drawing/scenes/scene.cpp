@@ -14,12 +14,12 @@ Scene::Scene(const std::string &name, const std::string &resource)
 
 }
 
-void Scene::addAction(const std::string &id, actions::Action* action)
+void Scene::addAction(actions::Action* action)
 {
-    m_actions[id] = action;
+    m_actions[action->id()] = action;
     action->parent(this);
     if (m_currentActionId.empty()) {
-        m_currentActionId = id;
+        m_currentActionId = action->id();
     }
 }
 

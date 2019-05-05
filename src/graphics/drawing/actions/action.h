@@ -3,13 +3,18 @@
 
 #include <string>
 #include <glad/glad.h>
-
+#include <graphics/textures/renderer.h>
 
 
 namespace graphics {
+
+namespace textures {
+class Renderer;
+}
+
 namespace drawing {
 
-namespace scenes{
+namespace scenes {
 class Scene;
 }
 
@@ -33,22 +38,25 @@ private:
 protected:
 
     UpdateFormula m_formula;
+    std::string m_id;
 
     template<typename T>
     void applyFormula(T &target, T dest, T origin, T ignoreValue = T{}, bool useIgnore = false);
 
     template<typename T>
-    void linearApplyFormula(T &target, T dest, T origin);
+    void linearApplyFormula(T &target, T dest, T origin, float totalTime, float elapsedTime);
 
     inline void elapseTime(GLfloat dt)
     { m_elapsedTime += static_cast<int>(dt); }
 
+    inline scenes::Scene *parent() const
+    { return m_parent; }
 
 public:
     Action();
 
-    inline void parent(scenes::Scene
-    * parent) { m_parent = parent; }
+    inline void parent(scenes::Scene *parent)
+    { m_parent = parent; }
 
     inline const std::string &next() const
     { return m_next; }
@@ -70,6 +78,18 @@ public:
 
     inline void formula(UpdateFormula value)
     { m_formula = value; }
+
+    inline void id(const std::string &id)
+    { m_id = id; }
+
+    inline const std::string& id() const
+    { return m_id; }
+
+    inline virtual void update(GLfloat dt)
+    {};
+
+    inline virtual void draw(graphics::textures::Renderer &renderer)
+    {};
 };
 
 
@@ -82,7 +102,7 @@ void Action::applyFormula(T &target, T dest, T origin, T ignoreValue, bool useIg
 
     switch (m_formula) {
         case Action::UpdateFormula::Linear:
-            linearApplyFormula(target, dest, origin);
+            linearApplyFormula(target, dest, origin, m_totalTime, m_elapsedTime);
             break;
         case Action::UpdateFormula::Teleport:
         default: // fall through
@@ -92,9 +112,9 @@ void Action::applyFormula(T &target, T dest, T origin, T ignoreValue, bool useIg
 }
 
 template<typename T>
-void Action::linearApplyFormula(T &target, T dest, T origin)
+void Action::linearApplyFormula(T &target, T dest, T origin, float totalTime, float elapsedTime)
 {
-    float delta = 1.0f / m_totalTime * m_elapsedTime;
+    float delta = 1.0f / totalTime * elapsedTime;
     target = origin + ((dest - origin) * delta);
 }
 

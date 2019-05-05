@@ -3,26 +3,30 @@
 
 #include <vector>
 #include <string>
+#include <assert.h>
 #include <algorithm>
 
 #include "filesystem/file.h"
+
 #include "filesystem/path.h"
 
 #include "graphics/textures/renderer.h"
 
 #include <rapidjson/document.h>
-
+#include <graphics/drawing/actions/bgcolor_action.h>
+#include <graphics/drawing/actions/wheel_action.h>
 #include "debug/logger.h"
 #include "arcade/settings.h"
+
 #include "math/shuntingyard.h"
 
 #include "graphics/drawing/drawable.h"
-
 #include "graphics/drawing/dimensions.h"
-#include "graphics/drawing/scenes/bgcolor_scene.h"
 
+#include "graphics/drawing/scenes/bgcolor_scene.h"
 #include "graphics/resources/wheel_resource.h"
 #include "graphics/resources/texture_resource.h"
+
 #include "graphics/resources/bgcolor_resource.h"
 
 namespace graphics {
@@ -34,8 +38,11 @@ private:
     std::vector<scenes::Scene *> m_scenes;
     debug::Logger m_debug;
     math::shuntingyard::Calculator m_calculator;
+    std::vector<Drawable *> m_wheelDrawables;
+
     int m_wheelIndex;
-    int m_oldWheelIndex;
+    int m_indexDifferential;
+    bool m_indexChanged;
 
     enum class ConversionScale
     {
@@ -51,16 +58,19 @@ private:
 
     void loadScene(const rapidjson::Value &scene);
 
-    void loadDrawableAction(scenes::Scene &scene, const rapidjson::Value &action, const std::string &name);
+    actions::Action *loadDrawableAction(const rapidjson::Value &action, const std::string &name);
 
-    void loadBGColorAction(scenes::Scene &scene, const rapidjson::Value &action, const std::string &name);
+    actions::Action *loadWheelAction(const rapidjson::Value &action, const std::string &name);
+
+    actions::Action *loadBGColorAction(const rapidjson::Value &action, const std::string &name);
 
     static GLfloat convertUnitToNumber(const std::string &unit, GLfloat defaultValue = INT_MIN,
                                        ConversionScale scale = ConversionScale::None);
 
     Dimensions jsonToDimensions(const rapidjson::Value &json, const std::string &name);
 
-    void dimensionsVariableAssignment(float &output, std::string &expression, const std::string &variableName,
+    void dimensionsVariableAssignment(float &output, std::string &expression,
+                                      const std::string &variableName,
                                       float defaultValue);
 
 public:
@@ -75,17 +85,42 @@ public:
 
     void update(GLfloat dt, glm::vec4 &bgColor);
 
-    inline void setWheelIndex(int index)
-    {
-        m_oldWheelIndex = m_wheelIndex;
-        m_wheelIndex = index;
-    }
-
     inline int getWheelIndex()
     { return m_wheelIndex; }
 
-    inline int getOldWheelIndex()
-    { return m_oldWheelIndex; }
+    inline void scrollUp()
+    {
+        m_wheelIndex = (m_wheelIndex + 1) % m_wheelDrawables.size();
+        m_indexChanged = true;
+        m_indexDifferential = 1;
+    }
+
+    inline void scrollDown()
+    {
+        m_wheelIndex--;
+        if (m_wheelIndex < 0) { m_wheelIndex = m_wheelDrawables.size() - 1; }
+        m_indexChanged = true;
+        m_indexDifferential = -1;
+    }
+
+    inline void setWheelIndex(int index);
+
+    inline bool wheelIndexChanged() const
+    { return m_indexChanged; }
+
+
+    inline int indexDifferential() const
+    { return m_indexDifferential; }
+
+    inline graphics::resources::Resource *resource(const std::string &id)
+    { return m_resources[id]; };
+
+    template<typename T>
+    inline void setDrawables(std::vector<T *> &drawables)
+    { m_wheelDrawables = std::vector<Drawable *>(drawables.begin(), drawables.end()); }
+
+    inline std::vector<Drawable *> &getDrawables()
+    { return m_wheelDrawables; };
 };
 
 
@@ -94,6 +129,7 @@ void Theme::load(const std::string &path, glm::vec4 &bgcolor, const std::vector<
 {
     rapidjson::Document d;
     if (!filesystem::file::readJson(path, d)) {
+        m_debug.error("failed to read theme file. file is corrupt / nonexistent. discarding.");
         return;
     }
 
@@ -192,6 +228,12 @@ void Theme::loadResource(const std::string &jsonRoot, const rapidjson::Value &re
     }
 }
 
+void Theme::setWheelIndex(int index)
+{
+    m_wheelIndex = index;
+    m_indexChanged = true;
+    m_indexDifferential = 0;
+}
 
 } // namespace drawing
 } // namespace graphics

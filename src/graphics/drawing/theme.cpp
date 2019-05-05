@@ -10,16 +10,25 @@
 #include "math/shuntingyard.h"
 
 #include "graphics/drawing/actions/bgcolor_action.h"
+#include "graphics/drawing/actions/wheel_action.h"
+
 #include "graphics/drawing/scenes/drawable_scene.h"
-#include "wheel.h"
+#include "graphics/drawing/scenes/wheel_scene.h"
+
+#include "graphics/drawing/wheel.h"
 
 namespace graphics {
 namespace drawing {
 
 Theme::Theme()
         : m_resources()
-          , m_debug("theme")
           , m_scenes()
+          , m_debug("theme")
+          , m_calculator()
+          , m_wheelDrawables()
+          , m_wheelIndex(0)
+          , m_indexDifferential(0)
+          , m_indexChanged(false)
 {
 }
 
@@ -69,18 +78,34 @@ void Theme::loadScene(const rapidjson::Value &scene)
     auto actions = scene["actions"].GetArray();
     switch (m_resources[resource]->type()) {
         case graphics::resources::Resource::Type::Texture:
-        case graphics::resources::Resource::Type::Video:
-        case graphics::resources::Resource::Type::Wheel: {
+        case graphics::resources::Resource::Type::Video: {
             myScene = new scenes::DrawableScene(name, resource);
             for (auto &action : actions) {
-                loadDrawableAction(*myScene, action, name);
+                auto *drawableAction = loadDrawableAction(action, name);
+                if (drawableAction != nullptr) {
+                    myScene->addAction(drawableAction);
+                }
+            }
+        }
+            break;
+
+        case graphics::resources::Resource::Type::Wheel: {
+            myScene = new scenes::WheelScene(name, resource);
+            for (auto &action : actions) {
+                auto *wheelAction = loadWheelAction(action, name);
+                if (wheelAction != nullptr) {
+                    myScene->addAction(wheelAction);
+                }
             }
         }
             break;
         case graphics::resources::Resource::Type::BGColor: {
             myScene = new scenes::BGColorScene(name, resource);
             for (auto &action : actions) {
-                loadBGColorAction(*myScene, action, name);
+                auto *bgColorAction = loadBGColorAction(action, name);
+                if (bgColorAction != nullptr) {
+                    myScene->addAction(bgColorAction);
+                }
             }
         }
             break;
@@ -96,48 +121,6 @@ void Theme::loadScene(const rapidjson::Value &scene)
 
     myScene->parent(this);
     m_scenes.push_back(myScene);
-}
-
-void Theme::loadDrawableAction(scenes::Scene &scene, const rapidjson::Value &action, const std::string &name)
-{
-    std::string id = filesystem::file::getString(action, "id");
-    if (id.empty()) {
-        m_debug.error("discarding action without id");
-        return;
-    }
-
-    std::string time = filesystem::file::getString(action, "time");
-    std::string next = filesystem::file::getString(action, "next");
-
-
-    if (time.empty()) {
-        time = "0";
-    }
-
-    if (next.empty() && id != "kill") {
-        // this is considered the last action, loop to self
-        // id == kill is used for a dying theme (the last thing an animating thing can do before the theme is removed
-        next = id;
-    }
-
-
-    GLfloat durationMs = convertUnitToNumber(time, 0, ConversionScale::None);
-    if (id == "kill" && durationMs > 1000.0f) {
-        durationMs = 1000.0f;
-        m_debug.warn("the kill action has a timelimit of 1000ms");
-    }
-
-    auto *myAction = new actions::DrawableAction;
-    myAction->dimensions(jsonToDimensions(action, name + "." + id));
-    myAction->duration(durationMs);
-    myAction->resetTime();
-    myAction->next(next);
-
-    if (durationMs > 0) {
-        myAction->formula(actions::Action::UpdateFormula::Linear);
-    }
-
-    scene.addAction(id, myAction);
 }
 
 Dimensions Theme::jsonToDimensions(const rapidjson::Value &json, const std::string &name)
@@ -169,36 +152,48 @@ Dimensions Theme::jsonToDimensions(const rapidjson::Value &json, const std::stri
     Dimensions dimensions;
 
     m_calculator.setHundredPercentByVariableName("screenw");
-    dimensionsVariableAssignment(dimensions.size.x, size[0], name + ".size.x", Dimensions::kSizeDefault);
+    dimensionsVariableAssignment(dimensions.size.x, size[0],
+                                 name + ".size.x",
+                                 Dimensions::kSizeDefault);
     m_calculator.setVariable("width", dimensions.size.x);
 
     m_calculator.setHundredPercentByVariableName("screenh");
-    dimensionsVariableAssignment(dimensions.size.y, size[1], name + ".size.y", Dimensions::kSizeDefault);
+    dimensionsVariableAssignment(dimensions.size.y, size[1],
+                                 name + ".size.y",
+                                 Dimensions::kSizeDefault);
     m_calculator.setVariable("height", dimensions.size.y);
 
 
     m_calculator.setHundredPercentByVariableName("screenw");
-    dimensionsVariableAssignment(dimensions.position.x, translate[0], name + ".translate.x",
+    dimensionsVariableAssignment(dimensions.position.x, translate[0],
+                                 name + ".translate.x",
                                  Dimensions::kPositionDefault);
 
     m_calculator.setHundredPercentByVariableName("screenh");
-    dimensionsVariableAssignment(dimensions.position.y, translate[1], name + ".translate.y",
+    dimensionsVariableAssignment(dimensions.position.y, translate[1],
+                                 name + ".translate.y",
                                  Dimensions::kPositionDefault);
 
 
     m_calculator.setHundredPercentByVariableName("screenw");
-    dimensionsVariableAssignment(dimensions.displacement.x, displacement[0], name + ".displacement.x",
+    dimensionsVariableAssignment(dimensions.displacement.x, displacement[0],
+                                 name + ".displacement.x",
                                  Dimensions::kDisplacementDefault);
 
     m_calculator.setHundredPercentByVariableName("screenh");
-    dimensionsVariableAssignment(dimensions.displacement.y, displacement[1], name + ".displacement.y",
+    dimensionsVariableAssignment(dimensions.displacement.y, displacement[1],
+                                 name + ".displacement.y",
                                  Dimensions::kDisplacementDefault);
 
     m_calculator.setHundredPercent(360.0f);
-    dimensionsVariableAssignment(dimensions.angle, targetdeg, name + ".rotation", Dimensions::kAngleDefault);
+    dimensionsVariableAssignment(dimensions.angle, targetdeg,
+                                 name + ".rotation",
+                                 Dimensions::kAngleDefault);
 
     m_calculator.setHundredPercent(1.0f);
-    dimensionsVariableAssignment(dimensions.opacity, targetOpacity, name + ".opacity", Dimensions::kOpacityDefault);
+    dimensionsVariableAssignment(dimensions.opacity, targetOpacity,
+                                 name + ".opacity",
+                                 Dimensions::kOpacityDefault);
 
     return dimensions;
 }
@@ -214,25 +209,17 @@ void Theme::dimensionsVariableAssignment(float &output, std::string &expression,
 }
 
 
-void Theme::loadBGColorAction(scenes::Scene &scene, const rapidjson::Value &action, const std::string &name)
+actions::Action *Theme::loadBGColorAction(const rapidjson::Value &action, const std::string &name)
 {
     std::string id = filesystem::file::getString(action, "id");
     if (id.empty()) {
         m_debug.error("discarding action without id");
-        return;
+        return nullptr;
     }
 
-    std::string time = filesystem::file::getString(action, "time");
-    std::string next = filesystem::file::getString(action, "next");
+    std::string time = filesystem::file::getString(action, "time", "0");
+    std::string next = filesystem::file::getString(action, "next", id);
 
-    if (time.empty()) {
-        time = "0";
-    }
-
-    if (next.empty()) {
-        // this is considered the last action, loop to self
-        next = id;
-    }
     std::string color[3]{};
     filesystem::file::getArray(action, "color", color, sizeof(color), "-1.0");
 
@@ -253,7 +240,8 @@ void Theme::loadBGColorAction(scenes::Scene &scene, const rapidjson::Value &acti
         myAction->formula(actions::Action::UpdateFormula::Linear);
     }
 
-    scene.addAction(id, myAction);
+    myAction->id(id);
+    return myAction;
 }
 
 /* Converts unit numbers in the json file to actual pixels
@@ -293,18 +281,38 @@ GLfloat Theme::convertUnitToNumber(const std::string &unit, GLfloat defaultValue
     }
 }
 
+actions::Action *Theme::loadDrawableAction(const rapidjson::Value &action, const std::string &name)
+{
+    std::string id = filesystem::file::getString(action, "id");
+    if (id.empty()) {
+        m_debug.error("discarding action without id");
+        return nullptr;
+    }
+
+    std::string time = filesystem::file::getString(action, "time", "0");
+    std::string next = filesystem::file::getString(action, "next", id);
+
+    GLfloat durationMs = convertUnitToNumber(time, 0, ConversionScale::None);
+
+    auto *myAction = new actions::DrawableAction;
+    myAction->dimensions(jsonToDimensions(action, name + "." + id));
+    myAction->duration(durationMs);
+    myAction->resetTime();
+    myAction->next(next);
+
+    if (durationMs > 0) {
+        myAction->formula(actions::Action::UpdateFormula::Linear);
+    }
+
+    myAction->id(id);
+    return myAction;
+}
+
+
 void Theme::draw(graphics::textures::Renderer &renderer)
 {
     for (auto &scene: m_scenes) {
-        if (auto ptr = dynamic_cast<scenes::DrawableScene *>(scene)) {
-            ptr->draw(renderer, m_resources[ptr->resourceId()]);
-        }
-        else if (auto ptr = dynamic_cast<scenes::BGColorScene *>(scene)) {
-            ptr->draw(renderer, *dynamic_cast<resources::BGColorResource *>(m_resources[ptr->resourceId()]));
-        }
-        else {
-            // unsupported type of scene
-        }
+        scene->draw(renderer);
     }
 }
 
@@ -313,6 +321,33 @@ void Theme::update(GLfloat dt, glm::vec4 &bgColor)
     for (auto scene : m_scenes) {
         scene->update(dt);
     }
+
+    // reset to resting state so we don't calculate double disposition
+    m_indexChanged = false;
+}
+
+actions::Action *Theme::loadWheelAction(const rapidjson::Value &action, const std::string &name)
+{
+    std::string id = filesystem::file::getString(action, "id");
+    if (id.empty()) {
+        m_debug.error("discarding action without id");
+        return nullptr;
+    }
+
+
+    if (id != "scroll") {
+        return loadDrawableAction(action, name);
+    }
+
+    // the action is a scrolling action for the wheel scrolling transition
+    std::string scroll_time = filesystem::file::getString(action, "scroll_time");
+    int durationMs = convertUnitToNumber(scroll_time, 0, ConversionScale::None);
+
+    auto* wheelAction = new actions::WheelAction;
+    wheelAction->id(id);
+    wheelAction->duration(durationMs);
+
+    return wheelAction;
 }
 
 

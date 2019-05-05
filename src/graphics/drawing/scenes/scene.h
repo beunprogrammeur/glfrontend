@@ -10,9 +10,16 @@
 
 
 namespace graphics {
+
+
+namespace textures {
+class Renderer;
+}
+
 namespace drawing {
 
 class Theme;
+
 
 namespace scenes {
 
@@ -30,11 +37,13 @@ protected:
 public:
     Scene(const std::string &name, const std::string &resource);
 
-    ~Scene();
+    virtual ~Scene();
 
     virtual void update(GLfloat dt) = 0;
 
-    virtual void addAction(const std::string &id, actions::Action *action);
+    virtual void draw(graphics::textures::Renderer &renderer) {};
+
+    virtual void addAction(actions::Action *action);
 
     inline const std::string &currentActionId()
     { return m_currentActionId; }

@@ -2,7 +2,9 @@
 // Created by vincent on 19. 4. 21.
 //
 
-#include "drawable_action.h"
+#include <graphics/drawing/scenes/wheel_scene.h>
+#include "graphics/drawing/actions/drawable_action.h"
+#include "graphics/drawing/scenes/drawable_scene.h"
 
 namespace graphics {
 namespace drawing {
@@ -20,7 +22,7 @@ DrawableAction::DrawableAction()
     m_origin.opacity = 1.0f;
 }
 
-void DrawableAction::update(Dimensions &target, GLfloat dt)
+void DrawableAction::update(GLfloat dt)
 {
     elapseTime(dt);
 
@@ -29,6 +31,14 @@ void DrawableAction::update(Dimensions &target, GLfloat dt)
         // prevent overshoot
         m_formula = UpdateFormula::Teleport;
     }
+
+    auto* p = dynamic_cast<scenes::DrawableScene*>(parent());
+    auto* pp = dynamic_cast<scenes::WheelScene*>(parent());
+
+    assert(p != nullptr || pp != nullptr);
+
+    auto& target = p != nullptr ? p->dimensions() : pp->dimensions();
+
 
     applyFormula(target.angle, m_dimensions.angle, m_origin.angle);
     applyFormula(target.opacity, m_dimensions.opacity, m_origin.opacity);

@@ -2,8 +2,8 @@
 // Created by vincent on 19. 4. 21.
 //
 
-#include "bgcolor_action.h"
-
+#include "graphics/drawing/actions/bgcolor_action.h"
+#include "graphics/drawing/scenes/bgcolor_scene.h"
 
 namespace graphics {
 namespace drawing {
@@ -17,7 +17,7 @@ BGColorAction::BGColorAction()
 }
 
 
-void BGColorAction::update(glm::vec4& target, GLfloat dt)
+void BGColorAction::update(GLfloat dt)
 {
     elapseTime(dt);
 
@@ -26,6 +26,10 @@ void BGColorAction::update(glm::vec4& target, GLfloat dt)
         // prevent overshoot
         m_formula = UpdateFormula::Teleport;
     }
+    auto* p = dynamic_cast<graphics::drawing::scenes::BGColorScene*>(parent());
+    assert(p != nullptr);
+
+    auto& target = p->color();
 
     applyFormula(target.r, m_destination.r, m_origin.r);
     applyFormula(target.g, m_destination.g, m_origin.g);

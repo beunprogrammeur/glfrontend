@@ -44,24 +44,13 @@ void Engine::init()
     m_renderer->shader().set("image", 0);
     m_renderer->shader().set("projection", projection);
 
-
-
-    // these variables will be set by the theme manager in the future
-    //auto& dimensions = m_wheel.dimensions();
-    //int margin = 10;
-    //dimensions.size.x = 150;
-    //dimensions.size.y = 75;
-    //dimensions.position.x = arcade::settings::screen::width() - (dimensions.size.x / 2.0f) - margin;
-    //dimensions.position.y = arcade::settings::screen::height() - (dimensions.size.y / 2.0f) - margin - ((dimensions.size.y + margin) *2);
-    //dimensions.displacement.x = -(dimensions.size.x * 0.33f);
-    //dimensions.displacement.y = -(dimensions.size.y + margin);
-
     // load game systems list (and propagate them)
     m_systemManager.load();
 
 
 
     m_theme.load("./data/theme.json", m_bgColor, m_systemManager.systems());
+    m_theme.setDrawables(m_systemManager.systems());
 
     initInputs();
 }
@@ -74,7 +63,7 @@ void Engine::initInputs()
         }
         else {
             m_systemManager.next();
-            m_theme.setWheelIndex(m_systemManager.index());
+            m_theme.scrollDown();
         }
     });
 
@@ -84,7 +73,7 @@ void Engine::initInputs()
         }
         else {
             m_systemManager.prev();
-            m_theme.setWheelIndex(m_systemManager.index());
+            m_theme.scrollUp();
         }
     });
 
@@ -113,19 +102,7 @@ void Engine::draw()
     glClearColor(m_bgColor.r, m_bgColor.g, m_bgColor.b, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT);
 
-    // TODO: draw wheel from within the theme (makes support for layering better
     m_theme.draw(*m_renderer);
-
-
-
-    //if (m_systemManager.hasSelected()) {
-    //    // draw game wheel
-    //    drawing::wheel::draw(*m_renderer, SOME_POSITION, m_systemManager.activeSystem()->games(), m_systemManager.activeSystem()->index());
-    //}
-    //else {
-    //    // draw system wheel
-    //    drawing::wheel::draw(*m_renderer, SOME_POSITION, m_systemManager.systems(), m_systemManager.index());
-    //}
 }
 
 void Engine::update(GLfloat dt)

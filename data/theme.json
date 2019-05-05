@@ -9,7 +9,13 @@
     ],
     "scenes": [
         {"name": "background_color", "resource": "background", "actions": [
-            {"id": "init", "color": ["1.0", "0.8", "0.5"]}
+            {"id": "0", "color": ["0", "0", "0"], "time":"1500", "next": "1"},
+            {"id": "1", "color": ["1", "0", "0"], "time":"1500", "next": "2"},
+            {"id": "2", "color": ["0", "1", "0"], "time":"1500", "next": "3"},
+            {"id": "3", "color": ["0", "0", "1"], "time":"1500", "next": "4"},
+            {"id": "4", "color": ["0", "1", "1"], "time":"1500", "next": "5"},
+            {"id": "5", "color": ["1", "1", "0"], "time":"1500", "next": "6"},
+            {"id": "6", "color": ["1", "0", "1"], "time":"1500", "next": "1"}
         ]},
         { "name": "wheel_backdrop", "resource": "selection_backdrop", "actions": [
             {"id": "init", "size": ["220", "120"], "opacity": "1", "time":"500","translate": ["100%-width/2+10","50%"], "next": "secondary_state"},
@@ -17,6 +23,7 @@
         ]},
 
         {"name": "www", "resource": "image_wheel", "actions": [
+            {"id": "scroll", "scroll_time":"1000"},
             {"id": "initial_state","size": ["wheel_backdrop.init.size.x - 20", "wheel_backdrop.init.size.y - 20"], "translate": ["wheel_backdrop.init.translate.x","wheel_backdrop.init.translate.y"], "displacement": ["0", "height+10"]}
         ]}
 

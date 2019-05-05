@@ -12,6 +12,12 @@
 #include "graphics/drawing/dimensions.h"
 
 namespace graphics {
+
+// forward declare
+namespace resource {
+class Resource;
+}
+
 namespace drawing {
 namespace scenes {
 
@@ -20,12 +26,16 @@ class DrawableScene : public Scene
 private:
     graphics::drawing::Dimensions m_dimensions;
 public:
-    DrawableScene(const std::string& name, const std::string& resource);
-    
-    void draw(graphics::textures::Renderer &renderer, graphics::resources::Resource* resource);
-    void update(GLfloat dt);
+    DrawableScene(const std::string &name, const std::string &resource);
 
-    void addAction(const std::string& id, actions::Action* action) override;
+    void draw(graphics::textures::Renderer &renderer) override;
+
+    void update(GLfloat dt) override;
+
+    void addAction(actions::Action *action) override;
+
+    graphics::drawing::Dimensions &dimensions()
+    { return m_dimensions; }
 };
 
 } // namespace scenes

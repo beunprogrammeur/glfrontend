@@ -14,7 +14,7 @@ namespace actions {
 
 class DrawableAction : public Action
 {
-private:
+protected:
     graphics::drawing::Dimensions m_dimensions;
     graphics::drawing::Dimensions m_origin;
 
@@ -30,7 +30,7 @@ public:
     inline void dimensions(Dimensions dimensions)
     { m_dimensions = dimensions; }
 
-    void update(Dimensions &target, GLfloat dt);
+    void update(GLfloat dt) override;
 };
 
 } // namespace actions

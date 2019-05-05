@@ -21,16 +21,12 @@ namespace graphics {
 namespace drawing {
 namespace wheel {
 
-//template <typename implements_drawable> void draw(graphics::textures::Renderer& renderer,const std::vector<implements_drawable*>& drawables, int selectedIndex);
-
-
-
 template<typename implements_drawable>
-void draw(graphics::textures::Renderer &renderer, Dimensions selectedPos,
+void draw(graphics::textures::Renderer &renderer, Dimensions selectedPos, glm::vec2 disposition,
           const std::vector<implements_drawable *> &drawables, int selectedIndex)
 {
     int count = drawables.size();
-    if (count == 0 || (selectedPos.displacement.x == 0 && selectedPos.displacement.y == 0)) {
+    if (count == 0 || (selectedPos.displacement.x == 0.0f && selectedPos.displacement.y == 0.0f)) {
         return;
     }
 
@@ -45,7 +41,7 @@ void draw(graphics::textures::Renderer &renderer, Dimensions selectedPos,
     if (dim.position.x < 0 || dim.position.x > screenWidth || dim.position.y < 0 || dim.position.y > screenHeight) {
         return;
     }
-
+    dim.position += disposition;
 
     if (dim.displacement.x < 0) { dim.displacement.x = -dim.displacement.x; }
     if (dim.displacement.y < 0) { dim.displacement.y = -dim.displacement.y; }

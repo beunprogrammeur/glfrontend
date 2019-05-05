@@ -20,34 +20,16 @@ DrawableScene::DrawableScene(const std::string &name, const std::string &resourc
     m_dimensions.angle = 0.0f;
 }
 
-void DrawableScene::draw(graphics::textures::Renderer &renderer, graphics::resources::Resource* resource)
+void DrawableScene::draw(graphics::textures::Renderer &renderer)
 {
+    auto *resource = dynamic_cast<resources::DrawableResource *>(parent()->resource(resourceId()));
 
-    if(resource->type() == graphics::resources::Resource::Type::Wheel)
-    {
-        auto* resGame = dynamic_cast<graphics::resources::WheelResource<arcade::Game>*>(resource);
-        auto* resGameSys = dynamic_cast<graphics::resources::WheelResource<arcade::GameSystem>*>(resource);
 
-        int index = parent()->getWheelIndex();
-
-        if(resGame != nullptr)
-        {
-            graphics::drawing::wheel::draw(renderer, m_dimensions, resGame->drawables(), index);
-        }
-        else if(resGameSys != nullptr)
-        {
-            graphics::drawing::wheel::draw(renderer, m_dimensions, resGameSys->drawables(), index);
-        }
-        else
-        {
-            // incompatible type
-        }
-    }
-    else {
-        auto* res = dynamic_cast<graphics::resources::DrawableResource*>(resource);
-        renderer.draw(res->texture(), m_dimensions.position, m_dimensions.size, m_dimensions.angle,
-                      glm::vec3(1.0f, 1.0f, 1.0f), m_dimensions.opacity);
-    }
+    renderer.draw(resource->texture(),
+                  m_dimensions.position,
+                  m_dimensions.size,
+                  m_dimensions.angle,
+                  glm::vec3(1.0f, 1.0f, 1.0f), m_dimensions.opacity);
 }
 
 void DrawableScene::update(GLfloat dt)
@@ -55,27 +37,26 @@ void DrawableScene::update(GLfloat dt)
     if (m_currentActionId.empty()) {
         return;
     }
-    auto *action = static_cast<actions::DrawableAction *>(m_actions[m_currentActionId]);
+    auto *action = dynamic_cast<actions::DrawableAction *>(m_actions[m_currentActionId]);
 
 
     dt *= 1000; // the domain here is milliseconds in stead of seconds
-    action->update(m_dimensions, dt);
+    action->update(dt);
 
 
     if (action->targetReached()) {
         action->resetTime();
         m_currentActionId = action->next();
-        static_cast<actions::DrawableAction *>(m_actions[m_currentActionId])->origin(m_dimensions);
+        dynamic_cast<actions::DrawableAction *>(m_actions[m_currentActionId])->origin(m_dimensions);
     }
 }
 
-void DrawableScene::addAction(const std::string &id, actions::Action *action)
+void DrawableScene::addAction(actions::Action *action)
 {
-    if(currentActionId().empty())
-    {
-        this->m_dimensions = static_cast<actions::DrawableAction*>(action)->dimensions();
+    if (currentActionId().empty()) {
+        this->m_dimensions = dynamic_cast<actions::DrawableAction *>(action)->dimensions();
     }
-    Scene::addAction(id, action);
+    Scene::addAction(action);
 }
 
 } // namespace scenes

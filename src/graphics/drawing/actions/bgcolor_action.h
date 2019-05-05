@@ -23,7 +23,7 @@ public:
 
     glm::vec4 origin() { return m_origin; }
     void origin(glm::vec4 value) { m_origin = value; }
-    void update(glm::vec4& target, GLfloat dt);
+    void update(GLfloat dt) override;
 
     void red(GLfloat value) {m_destination.r = value; }
     void green(GLfloat value) {m_destination.g = value; }
