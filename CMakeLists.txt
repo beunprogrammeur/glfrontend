@@ -27,7 +27,7 @@ add_definitions(-DSETTINGS_PATH="./data/settings.ini")
 
 # report a solution if OpenGL is not found
 if(NOT OPENGL_FOUND)
-	message("OpenGL dev not found, install libgl1-mesa-dev first")
+    message("OpenGL dev not found, install libgl1-mesa-dev first")
 endif()
 
 
@@ -43,8 +43,8 @@ target_link_libraries(glfrontend glfw3 GL GLU glfw3 X11 Xxf86vm Xrandr pthread X
 # copy data folder to build directory
 
 add_custom_command(
-	TARGET glfrontend PRE_BUILD
-	COMMAND cp -ru ${CMAKE_SOURCE_DIR}/data ${CMAKE_CURRENT_BINARY_DIR}/. 
-	COMMENT "copied/updated 'data' dir"
+        TARGET glfrontend PRE_BUILD
+        COMMAND cp -ru ${CMAKE_SOURCE_DIR}/data ${CMAKE_CURRENT_BINARY_DIR}/.
+        COMMENT "copied/updated 'data' dir"
 )
 

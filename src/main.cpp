@@ -32,12 +32,12 @@ int main(int argc, char** argv)
     GLFWwindow* window = nullptr;
     if(arcade::settings::screen::isFullScreen())
     {
-        window = glfwCreateWindow(arcade::settings::screen::width(), arcade::settings::screen::height(), "Breakout", glfwGetPrimaryMonitor(), nullptr);
+        window = glfwCreateWindow(arcade::settings::screen::width(), arcade::settings::screen::height(), "GLFrontend", glfwGetPrimaryMonitor(), nullptr);
         
     }
     else
     {
-        window = glfwCreateWindow(arcade::settings::screen::width(), arcade::settings::screen::height(), "Breakout", nullptr, nullptr);
+        window = glfwCreateWindow(arcade::settings::screen::width(), arcade::settings::screen::height(), "GLFrontend", nullptr, nullptr);
     }
 
     glfwMakeContextCurrent(window);
