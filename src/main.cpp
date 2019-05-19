@@ -1,6 +1,7 @@
 #include <iostream>
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
+#include <filesystem/database.h>
 
 #include "graphics/engine.h"
 #include "arcade/settings.h"
@@ -56,6 +57,8 @@ int main(int argc, char** argv)
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
+
+    filesystem::database::init();
 	graphics::Engine cabinet(arcade::settings::screen::width(), arcade::settings::screen::height());
 
     cabinet.init();

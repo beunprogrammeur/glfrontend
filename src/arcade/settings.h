@@ -3,40 +3,42 @@
 
 #include <string>
 
-namespace arcade
-{
-namespace settings
-{
-    void init();
-    void save();
+namespace arcade {
+namespace settings {
+void init();
 
-    namespace debug
-    {
-        bool useColor();
-    }    
+void save();
 
-    namespace program
-    {
-        std::string title();
-    }
+namespace debug {
+bool useColor();
+} // namespace debug
 
-    namespace screen 
-    {
-        bool isFullScreen();
-        void isFullScreen(bool value);
-        
-        int width();
-        void width(int value);
+namespace program {
+std::string title();
+} // namespace program
 
-        int height();
-        void height(int value);
-    }
+namespace screen {
+bool isFullScreen();
 
-    namespace gaming
-    {
-        std::string gameSystemsRootDir();
-    }
-}
+void isFullScreen(bool value);
+
+int width();
+
+void width(int value);
+
+int height();
+
+void height(int value);
+} // namespace screen
+
+namespace gaming {
+std::string gameSystemsRootDir();
+} // namespace gaming
+
+namespace database {
+std::string path();
+} // namespace database
+} // namespace settings
 
 
 } // namespace arcade

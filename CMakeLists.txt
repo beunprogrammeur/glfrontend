@@ -37,7 +37,7 @@ endif()
 add_executable (glfrontend ${SOURCES} ${INCL_SOURCES})
 
 target_include_directories(glfrontend PUBLIC ${OPENGL_INCLUDE_DIR})
-target_link_libraries(glfrontend glfw3 GL GLU glfw3 X11 Xxf86vm Xrandr pthread Xi dl Xcursor Xinerama rt m ${OPENGL_gl_LIBRARY} ${GLFW_LIBRARIES})
+target_link_libraries(glfrontend glfw3 GL GLU glfw3 X11 Xxf86vm Xrandr pthread Xi dl Xcursor Xinerama rt m sqlite3 ${OPENGL_gl_LIBRARY} ${GLFW_LIBRARIES})
 
 
 # copy data folder to build directory
