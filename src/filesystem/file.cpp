@@ -15,18 +15,16 @@
 
 // texture loading
 #define STB_IMAGE_IMPLEMENTATION
+
 #include <stb_image.h>
 
 
-namespace filesystem
-{
-namespace file
-{
+namespace filesystem {
+namespace file {
 
-bool readText(const std::string& path, std::string& output)
+bool readText(const std::string &path, std::string &output)
 {
-    try
-    {
+    try {
         std::ifstream file(path);
         std::stringstream ss;
         ss << file.rdbuf();
@@ -34,13 +32,12 @@ bool readText(const std::string& path, std::string& output)
         file.close();
         return true;
     }
-    catch(std::exception e)
-    {
+    catch (std::exception e) {
         return false;
     }
 }
 
-bool openTexture(const std::string& path, graphics::textures::Texture2D& texture)
+bool openTexture(const std::string &path, graphics::textures::Texture2D &texture)
 {
     GLuint pixelFormat = GL_RGB;
 
@@ -48,15 +45,13 @@ bool openTexture(const std::string& path, graphics::textures::Texture2D& texture
     GLint width;
     GLint height;
 
-    unsigned char* data = stbi_load(path.c_str(), &width, &height, &nChannels, 0);
+    unsigned char *data = stbi_load(path.c_str(), &width, &height, &nChannels, 0);
 
-    if(data == nullptr)
-    {
-        return false; 
+    if (data == nullptr) {
+        return false;
     }
 
-    if(nChannels == 4)
-    {
+    if (nChannels == 4) {
         pixelFormat = GL_RGBA;
     }
 
@@ -66,36 +61,32 @@ bool openTexture(const std::string& path, graphics::textures::Texture2D& texture
     return true;
 }
 
-bool readJson(const std::string& path, rapidjson::Document& document)
+bool readJson(const std::string &path, rapidjson::Document &document)
 {
     std::ifstream file;
     file.open(path);
-    if(!file.is_open())
-    {
+    if (!file.is_open()) {
         return false;
     }
     std::stringstream ss;
     ss << file.rdbuf();
     file.close();
 
-    return !document.Parse(ss.str().c_str()).HasParseError();    
+    return !document.Parse(ss.str().c_str()).HasParseError();
 }
 
 
-void getSubFiles(const std::string& path, std::vector<std::string>& output)
+void getSubFiles(const std::string &path, std::vector<std::string> &output)
 {
-    DIR* dir = opendir(path.c_str());
-    if(dir == nullptr)
-    {
+    DIR *dir = opendir(path.c_str());
+    if (dir == nullptr) {
         return;
     }
 
-    struct dirent* entry = readdir(dir);
-    while(entry != nullptr)
-    {
-        if(entry->d_type != DT_DIR)
-        {
-            output.push_back((path, entry->d_name));
+    struct dirent *entry = readdir(dir);
+    while (entry != nullptr) {
+        if (entry->d_type != DT_DIR) {
+            output.emplace_back((path, entry->d_name));
         }
         entry = readdir(dir);
     }
@@ -103,84 +94,84 @@ void getSubFiles(const std::string& path, std::vector<std::string>& output)
     closedir(dir);
 }
 
+bool exists(const std::string &path)
+{
+    if (path.empty()) {
+        return false;
+    }
 
-int execute(const::std::string& path, const std::string& args, bool escapePath, bool escapeArgs)
+    std::ifstream stream(path);
+    return stream ? true : false;
+}
+
+
+int execute(const ::std::string &path, const std::string &args, bool escapePath, bool escapeArgs)
 {
     pid_t pid = fork();
-    if(pid == 0)
-    {
+    if (pid == 0) {
         // child process
 
         std::stringstream ss;
 
         ss << (escapePath ? filesystem::path::escape(path) : path);
         ss << " ";
-        ss << (escapeArgs ? filesystem::path::escape(args) : args); 
-        
+        ss << (escapeArgs ? filesystem::path::escape(args) : args);
+
         std::cout << "executing: " << ss.str() << std::endl;
 
         int exitcode = system(ss.str().c_str());
         exit(exitcode);
     }
-    else if(pid > 0)
-    {
+    else if (pid > 0) {
         // parent process
         return pid;
     }
-    else
-    {
+    else {
         // Error creating the process
         return -1;
     }
 }
 
-std::string getString(const rapidjson::Value& json, const std::string& key, const std::string& defaultValue)
+std::string getString(const rapidjson::Value &json, const std::string &key, const std::string &defaultValue)
 {
-    if(!json.HasMember(key.c_str()))
-    {
+    if (!json.HasMember(key.c_str())) {
         return defaultValue;
     }
 
-    if(!json[key.c_str()].IsString())
-    {
+    if (!json[key.c_str()].IsString()) {
         return defaultValue;
     }
 
     auto output = std::string(json[key.c_str()].GetString());
-    if(output.empty()) {
+    if (output.empty()) {
         return defaultValue;
     }
 
     return output;
 }
 
-bool getArray(const rapidjson::Value& json, const std::string& key, std::string arr[], const int size, const std::string& defaultValue)
+bool getArray(const rapidjson::Value &json, const std::string &key, std::string arr[], const int size,
+              const std::string &defaultValue)
 {
-    if(!json.HasMember(key.c_str())) 
-    {
+    if (!json.HasMember(key.c_str())) {
         return false;
     }
 
-    if(!json[key.c_str()].IsArray())
-    {
-        if(json[key.c_str()].IsString())
-        {
-            for(int i = 0; i < size; i++)
-            {
+    if (!json[key.c_str()].IsArray()) {
+        if (json[key.c_str()].IsString()) {
+            for (int i = 0; i < size; i++) {
                 arr[i] = std::string(json[key.c_str()].GetString());
             }
         }
-        else
-        {
+        else {
             return false;
         }
     }
-    
+
     auto array = json[key.c_str()].GetArray();
     int outputSize = (size > array.Size()) ? array.Size() : size;
 
-    for(int i = 0; i < outputSize; i++)
-    {
+    for (int i = 0; i < outputSize; i++) {
         arr[i] = std::string(array[i].GetString());
     }
     return true;

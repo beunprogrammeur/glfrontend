@@ -9,7 +9,7 @@ namespace path
 
 std::string concat(const std::string& path, const std::string& file)
 {
-    if(path.length() == 0)
+    if(path.empty())
     {
         return file;
     }
@@ -73,7 +73,7 @@ std::string changeExtension(const std::string& filename, const std::string& newE
 
 std::string getPathWithoutFileName(const std::string& path)
 {
-    if(path.size() == 0)
+    if(path.empty())
     {
         return "";
     }
@@ -91,6 +91,33 @@ std::string getPathWithoutFileName(const std::string& path)
     else
     {
         return path.substr(0, index);
+    }
+}
+
+std::string getFileName(const std::string& path)
+{
+    if(path.empty())
+    {
+        return "";
+    }
+
+    int index = 0;
+    if((index = path.find_last_of("/")) == std::string::npos)
+    {
+        if((index = path.find_last_of("\\")) == std::string::npos)
+        {
+            return path;
+        }
+
+        return "";
+    }
+    else
+    {
+        if(index == path.length())
+        {
+            return "";
+        }
+        return path.substr(index+1, path.length());
     }
 }
 
