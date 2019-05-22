@@ -204,11 +204,11 @@ void loadGames(entity::GameSystem &system)
     std::vector<std::string> videos;
 
     filesystem::file::enumerateFiles(system.imgPath(), [&](const char *file) {
-        images.emplace_back(file);
+        images.emplace_back(filesystem::path::changeExtension(file, ""));
     });
 
     filesystem::file::enumerateFiles(system.vidPath(), [&](const char *file) {
-        videos.emplace_back(file);
+        videos.emplace_back(filesystem::path::changeExtension(file, ""));
     });
 
     // purge games from games for this system. (otherwise we will have duplicates)
@@ -221,8 +221,8 @@ void loadGames(entity::GameSystem &system)
                        system.id(),
                        file,
                        file, // TODO: make feature for friendly game names
-                       std::find(images.begin(), images.end(), file) != images.end(),
-                       std::find(videos.begin(), videos.end(), file) != videos.end()
+                       std::find(images.begin(), images.end(), filesystem::path::changeExtension(file, "")) != images.end(),
+                       std::find(videos.begin(), videos.end(), filesystem::path::changeExtension(file, "")) != videos.end()
             )) {
                 m_debug.warn("failed to insert game '", file, "' into the database");
             }
@@ -238,6 +238,7 @@ void loadGames()
 
     for (auto &system : systems) {
         loadGames(system);
+        m_debug.print("loaded '", system.name(), "' aka '", system.friendlyName(), "'");
     }
 }
 
@@ -276,11 +277,6 @@ bool init()
     std::vector<entity::GameSystem> systems;
     if (!getGameSystems(systems)) {
         m_debug.warn("failed to retrieve game systems from DB");
-    }
-    else {
-        for (auto &sys : systems) {
-            m_debug.print("loaded ", sys.name());
-        }
     }
 
     // TODO: make resource manager
