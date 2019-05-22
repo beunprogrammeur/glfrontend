@@ -2,7 +2,7 @@
 // Created by vincent on 19. 5. 18.
 //
 
-#include "filesystem/database.h"
+#include "database.h"
 #include "filesystem/file.h"
 
 #include "debug/logger.h"
@@ -12,6 +12,10 @@
 #include <functional>
 #include <sqlite3.h>
 #include <vector>
+#include <algorithm>
+
+#include "filesystem/database/entity/game.h"
+#include "filesystem/database/entity/game_system.h"
 
 namespace filesystem {
 namespace database {
@@ -169,26 +173,13 @@ void createDB()
           "    fk INTEGER NOT NULL, "
           "    name TEXT, "
           "    friendly_name TEXT, "
+          "    has_img NOT NULL DEFAULT 0, "
+          "    has_vid NOT NULL DEFAULT 0, "
           "    FOREIGN KEY(fk) REFERENCES game_systems(id) "
-          ");");
-    query("CREATE TABLE IF NOT EXISTS images ( "
-          "    id INTEGER NOT NULL DEFAULT 1 PRIMARY KEY AUTOINCREMENT UNIQUE, "
-          "    fk INTEGER, "
-          "    FOREIGN KEY(fk) REFERENCES games(id) "
-          ");");
-    query("CREATE TABLE IF NOT EXISTS videos ( "
-          "    id INTEGER NOT NULL DEFAULT 1 PRIMARY KEY AUTOINCREMENT UNIQUE, "
-          "    fk INTEGER, "
-          "    FOREIGN KEY(fk) REFERENCES games(id) "
-          ");");
-    query("CREATE TABLE IF NOT EXISTS sounds ( "
-          "    id INTEGER NOT NULL DEFAULT 1 PRIMARY KEY AUTOINCREMENT UNIQUE, "
-          "    fk INTEGER, "
-          "    FOREIGN KEY(fk) REFERENCES games(id) "
           ");");
 }
 
-void indexDB()
+void loadGameSystems()
 {
     std::vector<arcade::GameSystem *> systems;
     arcade::GameSystem::loadSystems(systems);
@@ -207,10 +198,60 @@ void indexDB()
     }
 }
 
+void loadGames(entity::GameSystem &system)
+{
+    std::vector<std::string> images;
+    std::vector<std::string> videos;
+
+    filesystem::file::enumerateFiles(system.imgPath(), [&](const char *file) {
+        images.emplace_back(file);
+    });
+
+    filesystem::file::enumerateFiles(system.vidPath(), [&](const char *file) {
+        videos.emplace_back(file);
+    });
+
+    // purge games from games for this system. (otherwise we will have duplicates)
+    query("DELETE FROM games WHERE fk = ?", nullptr, system.id());
+
+    if (query("BEGIN TRANSACTION;")) {
+        filesystem::file::enumerateFiles(system.romPath(), [&](const char *file) {
+            if (!query("INSERT INTO games (fk, name, friendly_name, has_img, has_vid) "
+                       "VALUES(?, ?, ?, ?, ?);", nullptr,
+                       system.id(),
+                       file,
+                       file, // TODO: make feature for friendly game names
+                       std::find(images.begin(), images.end(), file) != images.end(),
+                       std::find(videos.begin(), videos.end(), file) != videos.end()
+            )) {
+                m_debug.warn("failed to insert game '", file, "' into the database");
+            }
+        });
+        query("COMMIT TRANSACTION;");
+    }
+}
+
+void loadGames()
+{
+    std::vector<entity::GameSystem> systems;
+    getGameSystems(systems);
+
+    for (auto &system : systems) {
+        loadGames(system);
+    }
+}
+
+
+void indexDB()
+{
+    loadGameSystems();
+    loadGames();
+}
+
 bool dbIsEmpty()
 {
     int count = 0;
-    query("SELECT COUNT(`id`) FROM `game_systems`;", [&](sqlite3_stmt *statement) {
+    query("SELECT COUNT(`id`) FROM `game_systems` LIMIT 1;", [&](sqlite3_stmt *statement) {
         count = sqlite3_column_int(statement, 0);
     });
 
@@ -218,7 +259,7 @@ bool dbIsEmpty()
 }
 
 
-}
+} // namespace [private namespace]
 
 bool init()
 {
@@ -228,17 +269,63 @@ bool init()
 
     createDB();
     if (dbIsEmpty()) {
-        // TODO: index the database
         m_debug.warn("empty database, indexing...");
         indexDB();
     }
-    // TODO: load game systems
+
+    std::vector<entity::GameSystem> systems;
+    if (!getGameSystems(systems)) {
+        m_debug.warn("failed to retrieve game systems from DB");
+    }
+    else {
+        for (auto &sys : systems) {
+            m_debug.print("loaded ", sys.name());
+        }
+    }
 
     // TODO: make resource manager
     // TODO: make background worker with mutex/semaphore that loads resources on the fly (and releases them too)
     return true;
 }
 
+bool getGameSystems(std::vector<entity::GameSystem> &collection)
+{
+    int count = collection.size();
 
-} // db
+    query("SELECT id, name, friendly_name, rom_path, img_path, vid_path, has_logo "
+          "FROM game_systems;",
+          [&](sqlite3_stmt *statement) {
+              collection.emplace_back(entity::GameSystem(
+                      sqlite3_column_int(statement, 0),
+                      std::string(reinterpret_cast<const char *>(sqlite3_column_text(statement, 1))),
+                      std::string(reinterpret_cast<const char *>(sqlite3_column_text(statement, 2))),
+                      std::string(reinterpret_cast<const char *>(sqlite3_column_text(statement, 3))),
+                      std::string(reinterpret_cast<const char *>(sqlite3_column_text(statement, 4))),
+                      std::string(reinterpret_cast<const char *>(sqlite3_column_text(statement, 5))),
+                      static_cast<bool>(sqlite3_column_int(statement, 6))
+              ));
+          });
+
+    return count != collection.size();
+}
+
+
+void getGames(entity::GameSystem &system, std::vector<entity::Game> &collection)
+{
+    query("SELECT id, fk, name, friendly_name, hasimg, hasvid "
+          "FROM GAME "
+          "WHERE fk = ?;",
+          [&](sqlite3_stmt *statement) {
+              collection.emplace_back(entity::Game(
+                      sqlite3_column_int(statement, 0),
+                      sqlite3_column_int(statement, 1),
+                      std::string(reinterpret_cast<const char *>(sqlite3_column_text(statement, 2))),
+                      std::string(reinterpret_cast<const char *>(sqlite3_column_text(statement, 3))),
+                      static_cast<bool>(sqlite3_column_int(statement, 4)),
+                      static_cast<bool>(sqlite3_column_int(statement, 5))
+              ));
+          }, system.id());
+}
+
+} // namespace database
 } // namespace filesystem

@@ -104,6 +104,26 @@ bool exists(const std::string &path)
     return stream ? true : false;
 }
 
+bool enumerateFiles(const std::string &directory, const std::function<void(const char *name)> &callback)
+{
+    DIR *dir = opendir(directory.c_str());
+
+    if (dir == nullptr) {
+        return false;
+    }
+
+    struct dirent *entry = readdir(dir);
+
+    while (entry != nullptr) {
+        if (entry->d_type != DT_DIR) {
+            callback(entry->d_name);
+        }
+        entry = readdir(dir);
+    }
+
+    closedir(dir);
+}
+
 
 int execute(const ::std::string &path, const std::string &args, bool escapePath, bool escapeArgs)
 {

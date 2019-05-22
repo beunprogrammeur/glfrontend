@@ -1,7 +1,7 @@
 #include <iostream>
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
-#include <filesystem/database.h>
+#include <filesystem/database/database.h>
 
 #include "graphics/engine.h"
 #include "arcade/settings.h"
