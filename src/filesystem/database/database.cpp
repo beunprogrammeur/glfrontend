@@ -221,8 +221,10 @@ void loadGames(entity::GameSystem &system)
                        system.id(),
                        file,
                        file, // TODO: make feature for friendly game names
-                       std::find(images.begin(), images.end(), filesystem::path::changeExtension(file, "")) != images.end(),
-                       std::find(videos.begin(), videos.end(), filesystem::path::changeExtension(file, "")) != videos.end()
+                       std::find(images.begin(), images.end(), filesystem::path::changeExtension(file, "")) !=
+                       images.end(),
+                       std::find(videos.begin(), videos.end(), filesystem::path::changeExtension(file, "")) !=
+                       videos.end()
             )) {
                 m_debug.warn("failed to insert game '", file, "' into the database");
             }
@@ -321,6 +323,50 @@ void getGames(entity::GameSystem &system, std::vector<entity::Game> &collection)
                       static_cast<bool>(sqlite3_column_int(statement, 5))
               ));
           }, system.id());
+}
+
+
+bool getGameSystem(int id, entity::GameSystem &output)
+{
+    bool success = false;
+    query("SELECT id, name, friendly_name, rom_path, img_path, vid_path, has_logo "
+          "FROM game_systems "
+          "LIMIT 1;",
+          [&](sqlite3_stmt *statement) {
+              output = entity::GameSystem(
+                      sqlite3_column_int(statement, 0),
+                      std::string(reinterpret_cast<const char *>(sqlite3_column_text(statement, 1))),
+                      std::string(reinterpret_cast<const char *>(sqlite3_column_text(statement, 2))),
+                      std::string(reinterpret_cast<const char *>(sqlite3_column_text(statement, 3))),
+                      std::string(reinterpret_cast<const char *>(sqlite3_column_text(statement, 4))),
+                      std::string(reinterpret_cast<const char *>(sqlite3_column_text(statement, 5))),
+                      static_cast<bool>(sqlite3_column_int(statement, 6))
+              );
+              success = true;
+          }, id);
+
+    return success;
+}
+
+bool getGame(int id, entity::Game &output)
+{
+    bool success = false;
+    query("SELECT id, fk, name, friendly_name, hasimg, hasvid "
+          "FROM GAME "
+          "WHERE fk = ?;",
+          [&](sqlite3_stmt *statement) {
+              output = entity::Game(
+                      sqlite3_column_int(statement, 0),
+                      sqlite3_column_int(statement, 1),
+                      std::string(reinterpret_cast<const char *>(sqlite3_column_text(statement, 2))),
+                      std::string(reinterpret_cast<const char *>(sqlite3_column_text(statement, 3))),
+                      static_cast<bool>(sqlite3_column_int(statement, 4)),
+                      static_cast<bool>(sqlite3_column_int(statement, 5))
+              );
+              success = true;
+          }, id);
+
+    return success;
 }
 
 } // namespace database

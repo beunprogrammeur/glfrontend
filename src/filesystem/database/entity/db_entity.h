@@ -14,6 +14,10 @@ class DBEntity
 private:
     int m_id;
 
+protected:
+    inline void id(int id)
+    { m_id = id; }
+
 public:
     explicit DBEntity(int id);
 

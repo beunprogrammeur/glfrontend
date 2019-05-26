@@ -23,6 +23,7 @@ private:
     bool m_hasLogo;
 
 public:
+    GameSystem();
     GameSystem(int id, const std::string &name, const std::string &friendly_name, const std::string &rom_path,
                const std::string &img_path, const std::string &vid_path, bool has_logo);
 
@@ -43,6 +44,8 @@ public:
 
     inline bool hasLogo() const
     { return m_hasLogo; }
+
+    GameSystem& operator+(const GameSystem& other);
 };
 
 } // namespace entity

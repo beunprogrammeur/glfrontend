@@ -23,6 +23,7 @@ private:
     bool m_hasVid;
 
 public:
+    Game();
     Game(int id, int systemId, const std::string &name, const std::string &friendly_name, bool hasImg, bool hasVid);
 
     inline int systemId() const
@@ -36,6 +37,8 @@ public:
 
     inline bool hasImg() const { return m_hasImg; }
     inline bool hasVid() const { return m_hasVid; }
+
+    Game& operator=(const Game& other);
 };
 
 } // namespace entity
