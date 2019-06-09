@@ -14,6 +14,7 @@
 
 // glfrontend
 #include "graphics/textures/texture2d.h"
+#include "graphics/textures/image.h"
 
 
 
@@ -24,6 +25,7 @@ namespace file
     bool readText(const std::string& path, std::string& output);
     bool readJson(const std::string& path, rapidjson::Document& document);
     bool openTexture(const std::string& path, graphics::textures::Texture2D& texture);
+    bool openImage(const std::string& path, graphics::textures::Image& image);
     void getSubFiles(const std::string& path, std::vector<std::string>& output);
     bool exists(const std::string& path);
 

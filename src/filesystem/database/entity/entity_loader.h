@@ -15,25 +15,34 @@ namespace filesystem {
 namespace database {
 namespace entity {
 
+class GameSystem; // forward declare
+
 class EntityLoader
 {
 private:
-    std::unordered_map<int, TextureWrapper> m_entities;
+    std::unordered_map<int, TextureWrapper*> m_entities;
     std::queue<int> m_scheduleLoad;
     int m_msSleep;
     bool m_keep_alive;
     std::thread m_bgWorker;
-
+    // TODO: implement THREADSAFE multithreading here
 
     void schedule(int id);
 
-    void backgroundWorker(bool& should_be_alive);
+    void backgroundWorker();
+    static void load(TextureWrapper& wrapper);
+    static void loadGame(TextureWrapper& wrapper);
+    static void loadGameSystem(TextureWrapper& wrapper);
 
 public:
     explicit EntityLoader(int ms_sleep_bg_worker = 10);
     ~EntityLoader();
 
-    bool get(int id, graphics::textures::Texture2D& texture);
+    bool get(TextureMetaInfo& info, graphics::textures::Texture2D& texture);
+
+    void loadGamesFromDB(const GameSystem& system);
+
+    void loadGameSystemsFromDB();
 
 };
 

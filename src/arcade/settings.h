@@ -33,6 +33,7 @@ void height(int value);
 
 namespace gaming {
 std::string gameSystemsRootDir();
+std::string gameSystemImageName();
 } // namespace gaming
 
 namespace database {

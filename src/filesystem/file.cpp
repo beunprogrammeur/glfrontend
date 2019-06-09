@@ -39,6 +39,39 @@ bool readText(const std::string &path, std::string &output)
 
 bool openTexture(const std::string &path, graphics::textures::Texture2D &texture)
 {
+//    GLuint pixelFormat = GL_RGB;
+//
+//    int nChannels = 0;
+//    GLint width;
+//    GLint height;
+//
+//    unsigned char *data = stbi_load(path.c_str(), &width, &height, &nChannels, 0);
+//
+//    if (data == nullptr) {
+//        return false;
+//    }
+//
+//    if (nChannels == 4) {
+//        pixelFormat = GL_RGBA;
+//    }
+//
+//    texture.generate(width, height, data, pixelFormat, pixelFormat);
+//
+//    stbi_image_free(data);
+//    return true;
+
+    graphics::textures::Image image;
+    if (openImage(path, image)) {
+        texture.generate(image.width, image.height, image.data, image.internalFormat, image.imgFormat);
+        stbi_image_free(image.data);
+        return true;
+    }
+
+    return false;
+}
+
+bool openImage(const std::string &path, graphics::textures::Image &image)
+{
     GLuint pixelFormat = GL_RGB;
 
     int nChannels = 0;
@@ -55,9 +88,12 @@ bool openTexture(const std::string &path, graphics::textures::Texture2D &texture
         pixelFormat = GL_RGBA;
     }
 
-    texture.generate(width, height, data, pixelFormat, pixelFormat);
+    image.width = width;
+    image.height = height;
+    image.imgFormat = pixelFormat;
+    image.internalFormat = pixelFormat;
+    image.data = data;
 
-    stbi_image_free(data);
     return true;
 }
 

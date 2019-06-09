@@ -3,7 +3,6 @@
 //
 
 #include "graphics/drawing/actions/drawable_action.h"
-#include "graphics/drawing/wheel.h"
 #include "graphics/resources/wheel_resource.h"
 #include "drawable_scene.h"
 #include "graphics/drawing/theme.h"

@@ -308,21 +308,21 @@ bool getGameSystems(std::vector<entity::GameSystem> &collection)
 }
 
 
-void getGames(entity::GameSystem &system, std::vector<entity::Game> &collection)
+bool getGames(const entity::GameSystem &system, std::vector<entity::Game> &collection)
 {
-    query("SELECT id, fk, name, friendly_name, hasimg, hasvid "
-          "FROM GAME "
-          "WHERE fk = ?;",
-          [&](sqlite3_stmt *statement) {
-              collection.emplace_back(entity::Game(
-                      sqlite3_column_int(statement, 0),
-                      sqlite3_column_int(statement, 1),
-                      std::string(reinterpret_cast<const char *>(sqlite3_column_text(statement, 2))),
-                      std::string(reinterpret_cast<const char *>(sqlite3_column_text(statement, 3))),
-                      static_cast<bool>(sqlite3_column_int(statement, 4)),
-                      static_cast<bool>(sqlite3_column_int(statement, 5))
-              ));
-          }, system.id());
+    return query("SELECT id, fk, name, friendly_name, hasimg, hasvid "
+                 "FROM GAME "
+                 "WHERE fk = ?;",
+                 [&](sqlite3_stmt *statement) {
+                     collection.emplace_back(entity::Game(
+                             sqlite3_column_int(statement, 0),
+                             sqlite3_column_int(statement, 1),
+                             std::string(reinterpret_cast<const char *>(sqlite3_column_text(statement, 2))),
+                             std::string(reinterpret_cast<const char *>(sqlite3_column_text(statement, 3))),
+                             static_cast<bool>(sqlite3_column_int(statement, 4)),
+                             static_cast<bool>(sqlite3_column_int(statement, 5))
+                     ));
+                 }, system.id());
 }
 
 
@@ -331,6 +331,7 @@ bool getGameSystem(int id, entity::GameSystem &output)
     bool success = false;
     query("SELECT id, name, friendly_name, rom_path, img_path, vid_path, has_logo "
           "FROM game_systems "
+          "WHERE id = ?"
           "LIMIT 1;",
           [&](sqlite3_stmt *statement) {
               output = entity::GameSystem(
@@ -351,8 +352,8 @@ bool getGameSystem(int id, entity::GameSystem &output)
 bool getGame(int id, entity::Game &output)
 {
     bool success = false;
-    query("SELECT id, fk, name, friendly_name, hasimg, hasvid "
-          "FROM GAME "
+    query("SELECT id, fk, name, friendly_name, has_img, has_vid "
+          "FROM games "
           "WHERE fk = ?;",
           [&](sqlite3_stmt *statement) {
               output = entity::Game(
@@ -368,6 +369,25 @@ bool getGame(int id, entity::Game &output)
 
     return success;
 }
+
+
+bool getGameSystemsMeta(std::vector<entity::TextureMetaInfo> &collection)
+{
+    return query("SELECT id FROM game_systems;", [&](sqlite3_stmt *statement) {
+        collection.emplace_back(
+                entity::TextureMetaInfo(sqlite3_column_int(statement, 0), entity::TextureMetaInfo::Type::System));
+    });
+
+}
+
+bool getGamesMeta(const entity::GameSystem &system, std::vector<entity::TextureMetaInfo> &collection)
+{
+    return query("SELECT id FROM games WHERE id = ?;", [&](sqlite3_stmt *statement) {
+        collection.emplace_back(
+                entity::TextureMetaInfo(sqlite3_column_int(statement, 0), entity::TextureMetaInfo::Type::Game));
+    }, system.id());
+}
+
 
 } // namespace database
 } // namespace filesystem

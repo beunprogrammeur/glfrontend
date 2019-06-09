@@ -64,6 +64,9 @@ void height(int value)
 namespace gaming {
 std::string gameSystemsRootDir()
 { return ini.get("gaming", "game_systems_root", "./data/systems/"); }
+
+std::string gameSystemImageName()
+{ return "logo.png"; }
 } // namespace gaming
 
 namespace database {

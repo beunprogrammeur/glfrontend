@@ -6,6 +6,8 @@
 #include <regex>
 #include <sstream>
 #include <iostream>
+#include <filesystem/database/database.h>
+#include <filesystem/database/entity/game.h>
 
 #include "math/shuntingyard.h"
 
@@ -15,7 +17,8 @@
 #include "graphics/drawing/scenes/drawable_scene.h"
 #include "graphics/drawing/scenes/wheel_scene.h"
 
-#include "graphics/drawing/wheel.h"
+#include "filesystem/database/entity/game_system.h"
+
 
 namespace graphics {
 namespace drawing {
@@ -26,6 +29,7 @@ Theme::Theme()
           , m_debug("theme")
           , m_calculator()
           , m_wheelDrawables()
+          , m_wheelImageLoader()
           , m_wheelIndex(0)
           , m_indexDifferential(0)
           , m_indexChanged(false)
@@ -343,11 +347,81 @@ actions::Action *Theme::loadWheelAction(const rapidjson::Value &action, const st
     std::string scroll_time = filesystem::file::getString(action, "scroll_time");
     int durationMs = convertUnitToNumber(scroll_time, 0, ConversionScale::None);
 
-    auto* wheelAction = new actions::WheelAction;
+    auto *wheelAction = new actions::WheelAction;
     wheelAction->id(id);
     wheelAction->duration(durationMs);
 
     return wheelAction;
+}
+
+
+void Theme::loadSystemImages()
+{
+    m_wheelImageLoader.loadGameSystemsFromDB();
+}
+
+void Theme::loadGameImages(const filesystem::database::entity::GameSystem &system)
+{
+    m_wheelImageLoader.loadGamesFromDB(system);
+}
+
+
+void Theme::drawWheel(graphics::textures::Renderer &renderer, Dimensions selectedPos, glm::vec2 disposition,
+                      const std::vector<filesystem::database::entity::TextureMetaInfo> &drawables, int selectedIndex)
+{
+    int count = drawables.size();
+    if (count == 0 || (selectedPos.displacement.x == 0.0f && selectedPos.displacement.y == 0.0f)) {
+        return;
+    }
+
+    int screenWidth = arcade::settings::screen::width();
+    int screenHeight = arcade::settings::screen::height();
+
+
+
+    // make a copy for the current instance
+    auto dim = selectedPos;
+
+    if (dim.position.x < 0 || dim.position.x > screenWidth || dim.position.y < 0 || dim.position.y > screenHeight) {
+        return;
+    }
+    dim.position += disposition;
+
+    if (dim.displacement.x < 0) { dim.displacement.x = -dim.displacement.x; }
+    if (dim.displacement.y < 0) { dim.displacement.y = -dim.displacement.y; }
+
+
+    int index = selectedIndex;
+    while (dim.position.y > 0 &&
+           dim.position.x > 0) {
+        dim.position.y -= dim.displacement.y;
+        dim.position.x -= dim.displacement.x;
+        index--;
+    }
+
+    // make sure that the index is an item in the list and not out of bounds
+    // if we only have 1 or 2 items, print those 2 alternately.
+    // compensate for the upcoming modulo
+    index--;
+
+    if (index < 0) {
+        index *= -1;
+        index = count - index;
+    }
+
+    while (dim.position.x - (dim.size.x / 2.0f) < screenWidth &&
+           dim.position.y - (dim.size.y / 2.0f) < screenHeight) {
+        index = (index + 1) % count;
+        auto drawable = drawables[index];
+
+
+        graphics::textures::Texture2D tex;
+        if (m_wheelImageLoader.get(drawable, tex)) {
+            renderer.draw(tex, dim.position, dim.size);
+        }
+
+        dim.position += dim.displacement;
+    }
 }
 
 
