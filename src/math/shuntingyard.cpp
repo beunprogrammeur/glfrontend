@@ -122,6 +122,7 @@ float Calculator::calculate(const std::string &formula, float defaultValue)
             }
             else {
                 m_debug.warn("unidentified variable ", ss.str(), " in formula '", formula, "'");
+                return defaultValue;
             }
 
             c--; // compensate for the last c++
@@ -147,6 +148,7 @@ float Calculator::calculate(const std::string &formula, float defaultValue)
         }
 
         m_debug.error("unknown character '", c, "' in formula '", formula, "'");
+        return defaultValue;
     }
 
     // all is parsed, now execute the remaining variables

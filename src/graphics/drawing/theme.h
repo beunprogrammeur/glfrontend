@@ -6,28 +6,29 @@
 #include <assert.h>
 #include <algorithm>
 
-#include "filesystem/file.h"
+#include <rapidjson/document.h>
 
+#include "filesystem/file.h"
 #include "filesystem/path.h"
 
 #include "graphics/textures/renderer.h"
 
-#include <rapidjson/document.h>
-#include <graphics/drawing/actions/bgcolor_action.h>
-#include <graphics/drawing/actions/wheel_action.h>
-#include "debug/logger.h"
+#include "graphics/drawing/dimensions.h"
+#include "graphics/drawing/drawable.h"
+#include "graphics/drawing/scenes/bgcolor_scene.h"
+#include "graphics/drawing/actions/bgcolor_action.h"
+#include "graphics/drawing/actions/wheel_action.h"
+
+#include "graphics/resources/wheel_resource.h"
+#include "graphics/resources/texture_resource.h"
+#include "graphics/resources/bgcolor_resource.h"
+#include "filesystem/database/entity/entity_loader.h"
+
 #include "arcade/settings.h"
 
 #include "math/shuntingyard.h"
 
-#include "graphics/drawing/drawable.h"
-#include "graphics/drawing/dimensions.h"
-
-#include "graphics/drawing/scenes/bgcolor_scene.h"
-#include "graphics/resources/wheel_resource.h"
-#include "graphics/resources/texture_resource.h"
-
-#include "graphics/resources/bgcolor_resource.h"
+#include "debug/logger.h"
 
 namespace graphics {
 namespace drawing {
@@ -38,7 +39,8 @@ private:
     std::vector<scenes::Scene *> m_scenes;
     debug::Logger m_debug;
     math::shuntingyard::Calculator m_calculator;
-    std::vector<Drawable *> m_wheelDrawables;
+    std::vector<filesystem::database::entity::TextureMetaInfo> m_wheelDrawables;
+    filesystem::database::entity::EntityLoader m_wheelImageLoader;
 
     int m_wheelIndex;
     int m_indexDifferential;
@@ -115,12 +117,21 @@ public:
     inline graphics::resources::Resource *resource(const std::string &id)
     { return m_resources[id]; };
 
-    template<typename T>
-    inline void setDrawables(std::vector<T *> &drawables)
-    { m_wheelDrawables = std::vector<Drawable *>(drawables.begin(), drawables.end()); }
+    inline void setDrawables(std::vector<filesystem::database::entity::TextureMetaInfo> &drawables)
+    {
+        m_wheelDrawables = std::vector<filesystem::database::entity::TextureMetaInfo>(drawables.begin(),
+                                                                                      drawables.end());
+    }
 
-    inline std::vector<Drawable *> &getDrawables()
+    inline std::vector<filesystem::database::entity::TextureMetaInfo> &getDrawables()
     { return m_wheelDrawables; };
+
+    void loadSystemImages();
+
+    void loadGameImages(const filesystem::database::entity::GameSystem &system);
+
+    void drawWheel(graphics::textures::Renderer &renderer, Dimensions selectedPos, glm::vec2 disposition,
+                   const std::vector<filesystem::database::entity::TextureMetaInfo> &drawables, int selectedIndex);
 };
 
 

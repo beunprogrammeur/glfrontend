@@ -4,7 +4,7 @@
 // std
 #include <string>
 #include <vector>
-
+#include <functional>
 // OpenGL
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
@@ -14,6 +14,7 @@
 
 // glfrontend
 #include "graphics/textures/texture2d.h"
+#include "graphics/textures/image.h"
 
 
 
@@ -24,8 +25,12 @@ namespace file
     bool readText(const std::string& path, std::string& output);
     bool readJson(const std::string& path, rapidjson::Document& document);
     bool openTexture(const std::string& path, graphics::textures::Texture2D& texture);
+    bool openImage(const std::string& path, graphics::textures::Image& image);
     void getSubFiles(const std::string& path, std::vector<std::string>& output);
-    
+    bool exists(const std::string& path);
+
+    bool enumerateFiles(const std::string& directory, const std::function<void(const char* name)>& callback);
+
     /** Reads a string from a json file (at the given key)
     *   The requirements are that the key exists and contains a string. else the default value is used
     *   Returns: the found string / default value

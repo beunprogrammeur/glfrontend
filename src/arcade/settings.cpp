@@ -3,15 +3,13 @@
 #include "ini/ini.h"
 
 
-namespace arcade
-{
-namespace settings
-{
+namespace arcade {
+namespace settings {
 /*!
 *   contains all buffered hidden variables for the settings namespace
 */
 namespace {
-    auto ini = Ini::fromFile(SETTINGS_PATH);
+auto ini = Ini::fromFile(SETTINGS_PATH);
 }
 
 /*!
@@ -24,7 +22,7 @@ void init()
     screen::width();
     screen::height();
     screen::isFullScreen();
-    
+
 }
 
 void save()
@@ -32,37 +30,49 @@ void save()
     ini.save(SETTINGS_PATH);
 }
 
-namespace debug
-{
-    bool useColor() { return ini.get_int("debug", "use_color", false); }
-}
+namespace debug {
+bool useColor()
+{ return ini.get_int("debug", "use_color", false); }
+} // namespace debug
 
 
-namespace program
-{
-    std::string title() {return ini.get("program", "title", WINDOW_TITLE); }
-}
+namespace program {
+std::string title()
+{ return ini.get("program", "title", WINDOW_TITLE); }
+} // namespace program
 
-namespace screen 
-{
-    bool isFullScreen() { return static_cast<bool>(ini.get_int("screen", "is_fullscreen", false)); }
-    void isFullScreen(bool value) {ini.set_int("screen", "is_fullscreen", value); }
+namespace screen {
+bool isFullScreen()
+{ return static_cast<bool>(ini.get_int("screen", "is_fullscreen", false)); }
 
-    int  width() { return   ini.get_int("screen", "width", 600); }
-    void width(int value) { ini.set_int("screen", "width", value); }
+void isFullScreen(bool value)
+{ ini.set_int("screen", "is_fullscreen", value); }
 
-    int  height() { return   ini.get_int("screen", "height", 600); }
-    void height(int value) { ini.set_int("screen", "height", value); }
-}
+int width()
+{ return ini.get_int("screen", "width", 800); }
 
-namespace gaming
-{
-    std::string gameSystemsRootDir() { return ini.get("gaming","game_systems_root", "./data/systems/"); }
-}
+void width(int value)
+{ ini.set_int("screen", "width", value); }
 
+int height()
+{ return ini.get_int("screen", "height", 600); }
 
+void height(int value)
+{ ini.set_int("screen", "height", value); }
+} // namespace screen
 
+namespace gaming {
+std::string gameSystemsRootDir()
+{ return ini.get("gaming", "game_systems_root", "./data/systems/"); }
 
+std::string gameSystemImageName()
+{ return "logo.png"; }
+} // namespace gaming
+
+namespace database {
+std::string path()
+{ return ini.get("database", "path", "./data/cabinet.db"); }
+} // namespace database
 
 
 } // namespace settings

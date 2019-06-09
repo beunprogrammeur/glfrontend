@@ -2,6 +2,7 @@
 #include "arcade/settings.h"
 #include "filesystem/file.h"
 #include "filesystem/directory.h"
+#include "filesystem/database/database.h"
 #include "arcade/settings.h"
 
 #include <iostream>
@@ -48,9 +49,14 @@ void Engine::init()
     m_systemManager.load();
 
 
-
     m_theme.load("./data/theme.json", m_bgColor, m_systemManager.systems());
-    m_theme.setDrawables(m_systemManager.systems());
+
+    std::vector<filesystem::database::entity::TextureMetaInfo> collection;
+    filesystem::database::getGameSystemsMeta(collection);
+    m_theme.setDrawables(collection);
+
+    m_theme.loadSystemImages();
+
 
     initInputs();
 }

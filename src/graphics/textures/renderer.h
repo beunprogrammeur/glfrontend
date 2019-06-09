@@ -6,6 +6,7 @@
 
 #include "graphics/shader.h"
 #include "graphics/textures/texture2d.h"
+#include "debug/logger.h"
 
 namespace graphics
 {
@@ -16,6 +17,7 @@ class Renderer
 private:
     graphics::Shader m_shader;
     GLuint m_quadVAO; // VAO with information for drawing rectangles
+    debug::Logger m_debug;
 
     void init();
 

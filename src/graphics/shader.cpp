@@ -1,11 +1,10 @@
 #include "shader.h"
 #include <iostream>
 
-namespace graphics
-{
+namespace graphics {
 
 Shader::Shader()
-    : m_id(0)
+        : m_id(0)
 {
 }
 
@@ -14,11 +13,11 @@ void Shader::use()
     glUseProgram(m_id);
 }
 
-void Shader::compile(const GLchar* vertexSource, const GLchar* fragmentSource, const GLchar* geometrySource)
+void Shader::compile(const GLchar *vertexSource, const GLchar *fragmentSource, const GLchar *geometrySource)
 {
-    GLuint sVertex   = 0;
+    GLuint sVertex = 0;
     GLuint sFragment = 0;
-    GLuint gShader   = 0;
+    GLuint gShader = 0;
 
     // Vertex Shader
     sVertex = glCreateShader(GL_VERTEX_SHADER);
@@ -32,8 +31,7 @@ void Shader::compile(const GLchar* vertexSource, const GLchar* fragmentSource, c
     checkCompileErrors(sFragment, "FRAGMENT");
 
     // if geomtetry source is available, compile that one too
-    if(geometrySource != nullptr)
-    {
+    if (geometrySource != nullptr) {
         gShader = glCreateShader(GL_GEOMETRY_SHADER);
         glShaderSource(gShader, 1, &geometrySource, NULL);
         glCompileShader(gShader);
@@ -44,8 +42,7 @@ void Shader::compile(const GLchar* vertexSource, const GLchar* fragmentSource, c
     m_id = glCreateProgram();
     glAttachShader(m_id, sVertex);
     glAttachShader(m_id, sFragment);
-    if(geometrySource != nullptr)
-    {
+    if (geometrySource != nullptr) {
         glAttachShader(m_id, sVertex);
     }
 
@@ -53,63 +50,62 @@ void Shader::compile(const GLchar* vertexSource, const GLchar* fragmentSource, c
     checkCompileErrors(m_id, "PROGRAM");
     glDeleteShader(sVertex);
     glDeleteShader(sFragment);
-    
-    if(geometrySource!= nullptr)
-    {
+
+    if (geometrySource != nullptr) {
         glDeleteShader(gShader);
     }
 }
 
-void Shader::set(const GLchar* name, GLfloat value, GLboolean useShader)
+void Shader::set(const GLchar *name, GLfloat value, GLboolean useShader)
 {
-    if (useShader) use();
+    if (useShader) { use(); }
     glUniform1f(glGetUniformLocation(m_id, name), value);
 }
 
-void Shader::set(const GLchar* name, GLint   value, GLboolean useShader)
+void Shader::set(const GLchar *name, GLint value, GLboolean useShader)
 {
-    if (useShader) use();
+    if (useShader) { use(); }
     glUniform1i(glGetUniformLocation(m_id, name), value);
 }
 
-void Shader::set(const GLchar* name, const glm::vec2& value, GLboolean useShader)
+void Shader::set(const GLchar *name, const glm::vec2 &value, GLboolean useShader)
 {
     set(name, value.x, value.y, useShader);
 }
 
-void Shader::set(const GLchar* name, const glm::vec3& value, GLboolean useShader)
+void Shader::set(const GLchar *name, const glm::vec3 &value, GLboolean useShader)
 {
     set(name, value.x, value.y, value.z, useShader);
 }
 
-void Shader::set(const GLchar* name, const glm::vec4& value, GLboolean useShader)
+void Shader::set(const GLchar *name, const glm::vec4 &value, GLboolean useShader)
 {
     set(name, value.x, value.y, value.z, value.w, useShader);
 }
 
-void Shader::set(const GLchar* name, const glm::mat4& value, GLboolean useShader)
+void Shader::set(const GLchar *name, const glm::mat4 &value, GLboolean useShader)
 {
-    if (useShader) use();
+    if (useShader) { use(); }
     glUniformMatrix4fv(glGetUniformLocation(m_id, name), 1, GL_FALSE, glm::value_ptr(value));
 }
 
-void Shader::set(const GLchar* name, GLfloat x, GLfloat y, GLboolean useShader)
+void Shader::set(const GLchar *name, GLfloat x, GLfloat y, GLboolean useShader)
 {
-    if (useShader) use();
+    if (useShader) { use(); }
     glUniform2f(glGetUniformLocation(m_id, name), x, y);
 
 }
 
-void Shader::set(const GLchar* name, GLfloat x, GLfloat y, GLfloat z, GLboolean useShader)
+void Shader::set(const GLchar *name, GLfloat x, GLfloat y, GLfloat z, GLboolean useShader)
 {
-    if (useShader) use();
+    if (useShader) { use(); }
     glUniform3f(glGetUniformLocation(m_id, name), x, y, z);
 
 }
 
-void Shader::set(const GLchar* name, GLfloat x, GLfloat y, GLfloat z, GLfloat w, GLboolean useShader)
+void Shader::set(const GLchar *name, GLfloat x, GLfloat y, GLfloat z, GLfloat w, GLboolean useShader)
 {
-    if (useShader) use();
+    if (useShader) { use(); }
     glUniform4f(glGetUniformLocation(m_id, name), x, y, z, w);
 }
 
@@ -119,31 +115,25 @@ void Shader::checkCompileErrors(GLuint object, std::string type)
     GLchar infoLog[1024];
     std::string specificMessage;
 
-    if(type.compare("PROGRAM") == 0)
-    {
+    if (type.compare("PROGRAM") == 0) {
         glGetProgramiv(object, GL_LINK_STATUS, &success);
-        if(!success)
-        {
+        if (!success) {
             glGetProgramInfoLog(object, sizeof(infoLog), NULL, infoLog);
             specificMessage = "| ERROR:Shader: Compile-time error: Type: ";
-        }    
+        }
     }
-    else
-    {
+    else {
         glGetShaderiv(object, GL_COMPILE_STATUS, &success);
-        if(!success)
-        {
+        if (!success) {
             glGetShaderInfoLog(object, sizeof(infoLog), NULL, infoLog);
             specificMessage = "| ERROR:Shader: Link-time error: Type: ";
         }
     }
-    
-    if(!success)
-    {
-        std::cout << specificMessage << type << std::endl 
+
+    if (!success) {
+        std::cout << specificMessage << type << std::endl
                   << infoLog << std::endl
                   << "-- --------------------------------------- --" << std::endl;
-
     }
 }
 

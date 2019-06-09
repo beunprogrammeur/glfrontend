@@ -3,7 +3,6 @@
 //
 
 #include <graphics/drawing/actions/wheel_action.h>
-#include "graphics/drawing/wheel.h"
 #include "graphics/drawing/theme.h"
 #include "graphics/drawing/scenes/wheel_scene.h"
 #include "graphics/drawing/scenes/drawable_scene.h"
@@ -25,8 +24,7 @@ WheelScene::WheelScene(const std::string &name, const std::string &resource)
 
 void WheelScene::update(GLfloat dt)
 {
-    if(!m_indexInitialized)
-    {
+    if (!m_indexInitialized) {
         m_indexInitialized = true;
         m_internalDrawingIndex = parent()->getWheelIndex();
     }
@@ -56,7 +54,7 @@ void WheelScene::update(GLfloat dt)
 
 void WheelScene::draw(graphics::textures::Renderer &renderer)
 {
-    graphics::drawing::wheel::draw(
+    parent()->drawWheel(
             renderer,
             m_selectedPosition,
             m_transitionDispositionCurrent,

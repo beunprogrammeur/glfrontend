@@ -5,7 +5,6 @@
 #include <GLFW/glfw3.h>
 
 #include "graphics/textures/renderer.h"
-#include "graphics/drawing/wheel.h"
 
 #include "arcade/gamesystemmanger.h"
 #include "arcade/gamesystem.h"
@@ -36,7 +35,7 @@ private:
     bool m_gameRunning;
     int m_gamePid;
     std::map<std::string, input::Button> m_buttons;
-    graphics::drawing::Theme m_theme;
+    graphics::drawing::Theme m_theme; // main wheel theme
     glm::vec4 m_bgColor;
 
     void initInputs();
