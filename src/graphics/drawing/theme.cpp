@@ -1,23 +1,30 @@
 #include "graphics/drawing/theme.h"
-#include "graphics/drawing/actions/drawable_action.h"
 
 #include "arcade/settings.h"
 
 #include <regex>
 #include <sstream>
 #include <iostream>
-#include <filesystem/database/database.h>
-#include <filesystem/database/entity/game.h>
+#include "filesystem/database/database.h"
+#include "filesystem/database/entity/game.h"
+#include "filesystem/file.h"
+#include "filesystem/path.h"
 
 #include "math/shuntingyard.h"
 
 #include "graphics/drawing/actions/bgcolor_action.h"
+#include "graphics/drawing/actions/drawable_action.h"
 #include "graphics/drawing/actions/wheel_action.h"
-
 #include "graphics/drawing/scenes/drawable_scene.h"
 #include "graphics/drawing/scenes/wheel_scene.h"
+#include "graphics/resources/wheel_resource.h"
+#include "graphics/resources/texture_resource.h"
+#include "graphics/resources/bgcolor_resource.h"
 
 #include "filesystem/database/entity/game_system.h"
+
+
+#include "arcade/settings.h"
 
 
 namespace graphics {
@@ -33,10 +40,18 @@ Theme::Theme()
           , m_wheelIndex(0)
           , m_indexDifferential(0)
           , m_indexChanged(false)
+          , m_dying(false)
+          , m_killCallback(nullptr)
 {
 }
 
 Theme::~Theme()
+{
+    dispose();
+}
+
+
+void Theme::dispose()
 {
     for (auto pair : m_resources) {
         delete pair.second;
@@ -44,6 +59,41 @@ Theme::~Theme()
 
     for (auto ptr : m_scenes) {
         delete ptr;
+    }
+
+    m_resources.clear();
+    m_scenes.clear();
+    m_calculator.reset();
+    m_wheelDrawables.clear();
+    m_wheelImageLoader.clear();
+    m_wheelIndex = 0;
+    m_indexDifferential = 0;
+    m_indexChanged = false;
+    m_dying = false;
+    m_killCallback = nullptr;
+}
+
+
+void Theme::kill(std::function<void()> callback)
+{
+    if (m_dying) {
+        return;
+    }
+
+    m_dying = true;
+    m_killCallback = callback;
+
+    bool hasKillable = false;
+    for (auto ptr : m_scenes) {
+        if (ptr->kill()) {
+            hasKillable = true;
+        }
+    }
+
+    // if there is no killable scene instant kill theme
+    // else wait for  scenes to die
+    if (!hasKillable) {
+        callback();
     }
 }
 
@@ -124,6 +174,7 @@ void Theme::loadScene(const rapidjson::Value &scene)
     }
 
     myScene->parent(this);
+    myScene->verifyIds();
     m_scenes.push_back(myScene);
 }
 
@@ -328,6 +379,20 @@ void Theme::update(GLfloat dt, glm::vec4 &bgColor)
 
     // reset to resting state so we don't calculate double disposition
     m_indexChanged = false;
+
+    if (m_dying) {
+        bool alive = false;
+        for (auto scene: m_scenes) {
+            if (!scene->died()) {
+                alive = true;
+                break;
+            }
+        }
+
+        if (!alive && m_killCallback != nullptr) {
+            m_killCallback();
+        }
+    }
 }
 
 actions::Action *Theme::loadWheelAction(const rapidjson::Value &action, const std::string &name)
@@ -367,8 +432,10 @@ void Theme::loadGameImages(const filesystem::database::entity::GameSystem &syste
 
 
 void Theme::drawWheel(graphics::textures::Renderer &renderer, Dimensions selectedPos, glm::vec2 disposition,
-                      const std::vector<filesystem::database::entity::TextureMetaInfo> &drawables, int selectedIndex)
+                      int selectedIndex)
 {
+    auto &drawables = getDrawables();
+
     int count = drawables.size();
     if (count == 0 || (selectedPos.displacement.x == 0.0f && selectedPos.displacement.y == 0.0f)) {
         return;
@@ -424,6 +491,120 @@ void Theme::drawWheel(graphics::textures::Renderer &renderer, Dimensions selecte
     }
 }
 
+void Theme::load(const std::string &path, glm::vec4 &bgcolor)
+{
+    rapidjson::Document d;
+    if (!filesystem::file::readJson(path, d)) {
+        m_debug.error("failed to read theme file. file is corrupt / nonexistent. discarding.");
+        return;
+    }
+
+    if (!d.IsObject()) {
+        m_debug.error("malformed theme file. document is not an object");
+        return;
+    }
+
+    std::string jsonRoot = filesystem::path::getPathWithoutFileName(path);
+
+    m_calculator.setVariable("screenw", arcade::settings::screen::width());
+    m_calculator.setVariable("screenh", arcade::settings::screen::height());
+
+
+    if (!d.HasMember("resources")) {
+        m_debug.warn("loading theme without resources");
+    }
+    else if (!d["resources"].IsArray()) {
+        m_debug.error("malformed theme file. 'resources' is not an array");
+    }
+    else {
+        auto resources = d["resources"].GetArray();
+        for (auto &r : resources) {
+            loadResource(jsonRoot, r, bgcolor);
+        }
+    }
+
+    if (!d.HasMember("scenes")) {
+        m_debug.warn("loading theme without scenes");
+    }
+    else if (!d["resources"].IsArray()) {
+        m_debug.error("malformed theme file. 'scenes' is not an array");
+    }
+    else {
+        auto scenes = d["scenes"].GetArray();
+        for (auto &scene : scenes) {
+            loadScene(scene);
+        }
+    }
+
+    m_debug.print("loading theme complete");
+}
+
+void Theme::loadResource(const std::string &jsonRoot, const rapidjson::Value &resource, glm::vec4 &bgcolor)
+{
+    std::string name = filesystem::file::getString(resource, "name");
+    std::string type = filesystem::file::getString(resource, "type");
+    std::string path = filesystem::file::getString(resource, "path");
+
+    std::vector<std::string> types{
+            "video",
+            "sfx",
+    };
+
+    if (name.length() == 0) {
+        m_debug.error("resource without name. discarding resource");
+        return;
+    }
+
+    if (type != "texture" && std::find(types.begin(), types.end(), type) != types.end()) {
+        m_debug.warn("type '", type, "' found but is not yet implemented. discarding resource.");
+        return;
+    }
+
+
+    if (type != "bgcolor" && type != "wheel" && path.length() == 0) {
+        m_debug.error("resource '", name, "' has no path. discarding resource");
+        return;
+    }
+
+
+    if (type == "texture") {
+        path = filesystem::path::concat(jsonRoot, path);
+        auto *texResource = new graphics::resources::TextureResource(path, name, this);
+        texResource->load();
+        if (!texResource->isLoaded()) {
+            delete texResource;
+            m_debug.error("resource '", path, "' failed to load from disk. discarding resource");
+        }
+        else {
+            m_resources[name] = texResource;
+        }
+    }
+    else if (type == "bgcolor") {
+        auto *bgColorResource = new graphics::resources::BGColorResource(name, bgcolor, this);
+        m_resources[name] = bgColorResource;
+    }
+    else if (type == "wheel") {
+        auto *wheelResource = new graphics::resources::WheelResource(name, this);
+        m_resources[name] = wheelResource;
+    }
+    else {
+        m_debug.error("resource with unknown type '", type, "'. discarding resource");
+    }
+}
+
+void Theme::setWheelIndex(int index)
+{
+    m_wheelIndex = index;
+    m_indexChanged = true;
+    m_indexDifferential = 0;
+
+    for(auto scene : m_scenes) {
+        auto* wscene = dynamic_cast<drawing::scenes::WheelScene*>(scene);
+        if(wscene != nullptr) {
+            wscene->internalDrawingIndex(index);
+        }
+    }
+}
 
 } // namespace drawing
 } // namespace graphics

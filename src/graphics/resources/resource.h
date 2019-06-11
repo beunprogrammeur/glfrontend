@@ -2,11 +2,10 @@
 #define GRAPHICS_RESOURCES_RESOURCE_H
 
 #include <string>
+#include "graphics/drawing/theme.h"
 
-namespace graphics
-{
-namespace resources
-{
+namespace graphics {
+namespace resources {
 
 class Resource
 {
@@ -24,13 +23,22 @@ public:
 private:
     std::string m_name;
     Type m_type;
+    graphics::drawing::Theme *m_parent;
+
+protected:
+    graphics::drawing::Theme *parent()
+    { return m_parent; }
 
 public:
-    explicit Resource(const std::string& name, Type type);
+    Resource(const std::string &name, Type type, graphics::drawing::Theme *parent);
+
     virtual ~Resource() = default;
 
-    const std::string& name() const { return m_name; }
-    Resource::Type type() const { return m_type; }
+    const std::string &name() const
+    { return m_name; }
+
+    Resource::Type type() const
+    { return m_type; }
 };
 
 } // namespace resources

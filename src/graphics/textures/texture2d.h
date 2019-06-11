@@ -39,6 +39,14 @@ public:
 
     inline void bind() const
     { glBindTexture(GL_TEXTURE_2D, m_id); };
+
+    inline void dispose()
+    {
+        if (m_id != 0) {
+            glDeleteTextures(1, &m_id);
+            m_id = 0;
+        }
+    }
 };
 
 } // namespace textures

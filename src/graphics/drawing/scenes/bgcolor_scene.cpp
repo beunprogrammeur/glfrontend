@@ -41,6 +41,7 @@ void BGColorScene::update(GLfloat dt)
 
 
     if (action->targetReached()) {
+        dieIfPlanned();
         action->resetTime();
         m_currentActionId = action->next();
         dynamic_cast<actions::BGColorAction *>(m_actions[m_currentActionId])->origin(m_color);

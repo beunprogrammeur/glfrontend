@@ -19,10 +19,10 @@ namespace entity {
 
 EntityLoader::EntityLoader(int ms_sleep_bg_worker)
         : m_entities()
-, m_scheduleLoad()
-, m_msSleep(ms_sleep_bg_worker)
-, m_keep_alive(true)
-, m_bgWorker(&EntityLoader::backgroundWorker, this)
+          , m_scheduleLoad()
+          , m_msSleep(ms_sleep_bg_worker)
+          , m_keep_alive(true)
+          , m_bgWorker(&EntityLoader::backgroundWorker, this)
 {
 }
 
@@ -33,7 +33,8 @@ EntityLoader::~EntityLoader()
 
     for (auto &wrapper: m_entities) {
         if (wrapper.second->state() == TextureWrapper::State::Loaded) {
-            // TODO: clear texture memory?
+            // TODO: clear texture memory? (Does this work?)
+            wrapper.second->texture().dispose();
         }
     }
 }
@@ -44,7 +45,7 @@ bool EntityLoader::get(TextureMetaInfo &info, graphics::textures::Texture2D &tex
         return false;
     }
 
-    auto& wrapper = m_entities[info.id()];
+    auto &wrapper = m_entities[info.id()];
 
     switch (wrapper->state()) {
         case TextureWrapper::State::Ready: {
@@ -83,6 +84,8 @@ void EntityLoader::backgroundWorker()
             std::this_thread::sleep_for(std::chrono::milliseconds(m_msSleep));
             continue;
         }
+
+        std::lock_guard<std::mutex> lock(m_mutex);
 
         int id = m_scheduleLoad.front();
         m_scheduleLoad.pop();
@@ -166,6 +169,21 @@ void EntityLoader::loadGameSystem(TextureWrapper &wrapper)
     else {
         wrapper.state(TextureWrapper::State::Unknown);
     }
+}
+
+void EntityLoader::clear()
+{
+    std::lock_guard<std::mutex> lock(m_mutex);
+    std::queue<int> empty;
+    m_scheduleLoad.swap(empty);
+
+    for (auto &entity : m_entities) {
+        entity.second->texture().dispose();
+        entity.second->image().dispose();
+        delete entity.second;
+    }
+
+    m_entities.clear();
 }
 
 } // namespace entity

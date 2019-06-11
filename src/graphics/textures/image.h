@@ -7,6 +7,7 @@
 
 
 #include <glad/glad.h>
+#include <stb_image.h>
 
 namespace graphics {
 namespace textures {
@@ -16,11 +17,19 @@ struct Image
 public:
     GLuint width;
     GLuint height;
-    unsigned char* data;
+    unsigned char *data;
     GLuint internalFormat;
     GLuint imgFormat;
 
     Image();
+
+    inline void dispose()
+    {
+        if (data) {
+            stbi_image_free(data);
+            data = nullptr;
+        }
+    }
 };
 
 

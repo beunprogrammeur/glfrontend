@@ -25,7 +25,7 @@ private:
     int m_msSleep;
     bool m_keep_alive;
     std::thread m_bgWorker;
-    // TODO: implement THREADSAFE multithreading here
+    std::mutex m_mutex;
 
     void schedule(int id);
 
@@ -44,6 +44,7 @@ public:
 
     void loadGameSystemsFromDB();
 
+    void clear();
 };
 
 } // namespace entity

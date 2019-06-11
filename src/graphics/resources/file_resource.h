@@ -17,14 +17,21 @@ private:
     bool m_isLoaded;
 
 protected:
-    void markLoaded() { m_isLoaded = true; }
+    void markLoaded()
+    { m_isLoaded = true; }
 
 public:
-    FileResource(const std::string& path, const std::string& name, Resource::Type type);
+    FileResource(const std::string &path, const std::string &name, Resource::Type type, graphics::drawing::Theme *parent
+    );
 
-    const std::string& path() const    { return m_path; }
-    void path(const std::string& path) { m_path = path; }
-    bool isLoaded() const  { return m_isLoaded; }
+    const std::string &path() const
+    { return m_path; }
+
+    void path(const std::string &path)
+    { m_path = path; }
+
+    bool isLoaded() const
+    { return m_isLoaded; }
 
     virtual bool load() = 0;
 };

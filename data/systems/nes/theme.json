@@ -1,0 +1,18 @@
+{
+  "resources": [
+    {"type": "texture", "name": "nes", "path": "theme/nes.png"},
+
+    {"type": "bgcolor", "name": "bg"},
+    {"type": "wheel", "name":"wheel"}
+  ],
+
+  "scenes": [
+    {"name": "background","resource": "bg", "actions":[
+      {"id": "first", "color": ["0", "0", "0"], "time": "1000", "next": "second"},
+      {"id": "second", "color": ["1", "1", "1"], "time": "1000", "next": "first"},
+      {"id": "kill", "color": ["1", "0", "0"], "time": "333", "next": "kill2"},
+      {"id": "kill2", "color": ["1", "1", "0"], "time": "333", "next": "kill3"},
+      {"id": "kill3", "color": ["1", "1", "1"], "time": "333"}
+    ]}
+  ]
+}

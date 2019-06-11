@@ -5,30 +5,27 @@
 #ifndef GLFRONTEND_WHEEL_RESOURCE_H
 #define GLFRONTEND_WHEEL_RESOURCE_H
 
-#include "graphics/resources/system_resource.h"
-#include "graphics/drawing/drawable.h"
 #include <vector>
 
+#include "graphics/resources/system_resource.h"
+#include "graphics/drawing/drawable.h"
+#include "graphics/drawing/theme.h"
+
+#include "filesystem/database/entity/texture_wrapper.h"
+
 namespace graphics {
+
 namespace resources {
 
-template<typename drawable>
-class WheelResource : public SystemResource {
-private:
-    std::vector<drawable*> m_drawables;
+class WheelResource : public SystemResource
+{
 
 public:
-    WheelResource(const std::string& name, const std::vector<drawable*>& drawables);
-    inline std::vector<drawable*> drawables() { return m_drawables; };
+    WheelResource(const std::string &name, graphics::drawing::Theme *parent);
+
+    //inline std::vector<filesystem::database::entity::TextureWrapper *> drawables()
+    //{ return parent()->drawables(); }
 };
-
-
-template<typename drawable>
-WheelResource<drawable>::WheelResource(const std::string &name, const std::vector<drawable*>& drawables)
-        : SystemResource(name, Resource::Type::Wheel)
-          , m_drawables(drawables)
-{
-}
 
 } // namespace resources
 } // namespace graphice

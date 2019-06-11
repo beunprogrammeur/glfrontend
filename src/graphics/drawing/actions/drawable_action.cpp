@@ -11,9 +11,9 @@ namespace drawing {
 namespace actions {
 
 DrawableAction::DrawableAction()
-    : Action()
-    , m_dimensions()
-    , m_origin()
+        : Action()
+          , m_dimensions()
+          , m_origin()
 {
     m_dimensions.angle = 0.0f;
     m_dimensions.opacity = 1.0f;
@@ -32,12 +32,12 @@ void DrawableAction::update(GLfloat dt)
         m_formula = UpdateFormula::Teleport;
     }
 
-    auto* p = dynamic_cast<scenes::DrawableScene*>(parent());
-    auto* pp = dynamic_cast<scenes::WheelScene*>(parent());
+    auto *p = dynamic_cast<scenes::DrawableScene *>(parent());
+    auto *pp = dynamic_cast<scenes::WheelScene *>(parent());
 
     assert(p != nullptr || pp != nullptr);
 
-    auto& target = p != nullptr ? p->dimensions() : pp->dimensions();
+    auto &target = p != nullptr ? p->dimensions() : pp->dimensions();
 
 
     applyFormula(target.angle, m_dimensions.angle, m_origin.angle);
@@ -46,8 +46,10 @@ void DrawableAction::update(GLfloat dt)
     applyFormula(target.position.y, m_dimensions.position.y, m_origin.position.y, Dimensions::kPositionDefault, true);
     applyFormula(target.size.x, m_dimensions.size.x, m_origin.size.x, Dimensions::kSizeDefault, true);
     applyFormula(target.size.y, m_dimensions.size.y, m_origin.size.y, Dimensions::kSizeDefault, true);
-    applyFormula(target.displacement.x, m_dimensions.displacement.x, m_origin.displacement.x, Dimensions::kDisplacementDefault, true);
-    applyFormula(target.displacement.y, m_dimensions.displacement.y, m_origin.displacement.y, Dimensions::kDisplacementDefault, true);
+    applyFormula(target.displacement.x, m_dimensions.displacement.x, m_origin.displacement.x,
+                 Dimensions::kDisplacementDefault, true);
+    applyFormula(target.displacement.y, m_dimensions.displacement.y, m_origin.displacement.y,
+                 Dimensions::kDisplacementDefault, true);
 
     m_formula = formula;
 }

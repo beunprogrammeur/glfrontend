@@ -15,8 +15,8 @@ namespace resources {
 class DrawableResource : public FileResource
 {
 public:
-    DrawableResource(const std::string& path, const std::string& name, graphics::resources::Resource::Type type)
-        : FileResource(path, name, type)
+    DrawableResource(const std::string& path, const std::string& name, graphics::resources::Resource::Type type, graphics::drawing::Theme* parent)
+        : FileResource(path, name, type, parent)
     {}
 
     virtual bool load() = 0;

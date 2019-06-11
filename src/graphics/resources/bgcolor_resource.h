@@ -17,7 +17,7 @@ class BGColorResource : public SystemResource
 private:
     glm::vec4& m_color;
 public:
-    BGColorResource(const std::string& name, glm::vec4& color);
+    BGColorResource(const std::string& name, glm::vec4& color, graphics::drawing::Theme* parent);
 
 
     GLfloat red()   const { return m_color.r; }

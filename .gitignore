@@ -2,4 +2,5 @@
 .idea
 build
 cmake-build-debug
-data/systems/*/logo.*
+data/systems/*/*.png
+data/systems/*/wheel/*.png

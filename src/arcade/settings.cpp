@@ -61,6 +61,20 @@ void height(int value)
 { ini.set_int("screen", "height", value); }
 } // namespace screen
 
+namespace theme {
+inline std::string themeFileName()
+{ return "theme.json"; }
+
+
+std::string mainThemeFilePath()
+{ return filesystem::path::concat(program::dataDir(), themeFileName()); }
+
+
+std::string themeFilePath(std::string system)
+{ return filesystem::path::concat(filesystem::path::concat(gaming::gameSystemsRootDir(), system), themeFileName()); }
+
+} // namespace theme
+
 namespace gaming {
 std::string gameSystemsRootDir()
 { return ini.get("gaming", "game_systems_root", "./data/systems/"); }

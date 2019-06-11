@@ -46,7 +46,9 @@ void WheelScene::update(GLfloat dt)
 
 
     if (action->targetReached()) {
+        dieIfPlanned();
         action->resetTime();
+
         m_currentActionId = action->next();
         dynamic_cast<actions::DrawableAction *>(m_actions[m_currentActionId])->origin(m_selectedPosition);
     }
@@ -58,7 +60,6 @@ void WheelScene::draw(graphics::textures::Renderer &renderer)
             renderer,
             m_selectedPosition,
             m_transitionDispositionCurrent,
-            parent()->getDrawables(),
             m_internalDrawingIndex);
 
 }

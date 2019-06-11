@@ -14,7 +14,7 @@ class TextureResource : public DrawableResource
 private:
     graphics::textures::Texture2D m_texture;
 public:
-    TextureResource(std::string& path, std::string& name) : DrawableResource(path, name, graphics::resources::Resource::Type::Texture) { }
+    TextureResource(std::string& path, std::string& name, graphics::drawing::Theme* parent) : DrawableResource(path, name, graphics::resources::Resource::Type::Texture, parent) { }
     bool load() override;
     graphics::textures::Texture2D& texture() { return m_texture; }
 };

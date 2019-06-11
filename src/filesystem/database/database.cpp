@@ -106,7 +106,7 @@ bool query(const std::string &query, const std::function<void(sqlite3_stmt *)> &
 
 
     if (SQLITE_OK != (res = sqlite3_prepare_v2(db, query.c_str(), -1, &statement, nullptr))) {
-        m_debug.error("failed to prepare query: ", sqlite3_errmsg(db));
+        m_debug.error("failed to prepare query: ", sqlite3_errmsg(db), '\n', query);
         return false;
     }
 
@@ -386,6 +386,48 @@ bool getGamesMeta(const entity::GameSystem &system, std::vector<entity::TextureM
         collection.emplace_back(
                 entity::TextureMetaInfo(sqlite3_column_int(statement, 0), entity::TextureMetaInfo::Type::Game));
     }, system.id());
+}
+
+bool update(arcade::GameSystem &gameSystem)
+{
+    namespace fs = filesystem;
+
+    std::string logoPath = fs::path::concat(arcade::settings::gaming::gameSystemsRootDir(), gameSystem.name());
+    logoPath = fs::path::concat(logoPath, arcade::settings::gaming::gameSystemImageName());
+
+    return query("UPDATE game_systems "
+                 "SET friendly_name = ?, "
+                 "    rom_path = ?, "
+                 "    img_path = ?, "
+                 "    vid_path = ?, "
+                 "    has_logo = ? "
+                 "WHERE id = ? "
+                 "LIMIT 1;",
+                 nullptr,
+                 gameSystem.friendlyName(),
+                 gameSystem.romPath(),
+                 gameSystem.imgPath(),
+                 gameSystem.vidPath(),
+                 filesystem::file::exists(logoPath));
+}
+
+bool getGameSystem(const std::string &name, entity::GameSystem &output)
+{
+    int id = 0;
+    query("SELECT id FROM game_systems WHERE name = ? LIMIT 1;", [&](sqlite3_stmt *statement) {
+        id = sqlite3_column_int(statement, 0);
+    }, name.c_str());
+
+    if (id == 0) {
+        return false;
+    }
+
+    return getGameSystem(id, output);
+}
+
+bool convert(arcade::GameSystem &from, entity::GameSystem &to)
+{
+    return getGameSystem(from.name(), to);
 }
 
 

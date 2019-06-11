@@ -7,8 +7,8 @@
 namespace graphics {
 namespace resources {
 
-BGColorResource::BGColorResource(const std::string &name, glm::vec4 &color)
-        : SystemResource(name, graphics::resources::Resource::Type::BGColor)
+BGColorResource::BGColorResource(const std::string &name, glm::vec4 &color, graphics::drawing::Theme* parent)
+        : SystemResource(name, graphics::resources::Resource::Type::BGColor, parent)
           , m_color(color)
 {
 }

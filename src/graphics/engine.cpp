@@ -9,6 +9,7 @@
 #include <thread>
 #include <chrono>
 #include <sys/wait.h>
+#include <filesystem/database/entity/game_system.h>
 
 namespace graphics {
 
@@ -22,6 +23,8 @@ Engine::Engine(const GLuint width, const GLuint height)
           , m_gamePid(0)
           , m_buttons()
           , m_bgColor(glm::vec4(0.5f, 0.5f, 0.5f, 1.0f))
+          , m_debug("engine")
+          , m_mainWheelIndex(0)
 {
 }
 
@@ -49,13 +52,7 @@ void Engine::init()
     m_systemManager.load();
 
 
-    m_theme.load("./data/theme.json", m_bgColor, m_systemManager.systems());
-
-    std::vector<filesystem::database::entity::TextureMetaInfo> collection;
-    filesystem::database::getGameSystemsMeta(collection);
-    m_theme.setDrawables(collection);
-
-    m_theme.loadSystemImages();
+    loadMainTheme();
 
 
     initInputs();
@@ -65,20 +62,20 @@ void Engine::initInputs()
 {
     m_buttons["up"] = input::Button([&]() {
         if (m_systemManager.hasSelected()) {
-            m_systemManager.activeSystem()->next();
+            m_systemManager.activeSystem()->prev();
         }
         else {
-            m_systemManager.next();
+            m_systemManager.prev();
             m_theme.scrollDown();
         }
     });
 
     m_buttons["down"] = input::Button([&]() {
         if (m_systemManager.hasSelected()) {
-            m_systemManager.activeSystem()->prev();
+            m_systemManager.activeSystem()->next();
         }
         else {
-            m_systemManager.prev();
+            m_systemManager.next();
             m_theme.scrollUp();
         }
     });
@@ -93,12 +90,25 @@ void Engine::initInputs()
         }
         else {
             m_systemManager.select();
+            m_mainWheelIndex = m_theme.getWheelIndex();
+
+            filesystem::database::entity::GameSystem system;
+            filesystem::database::convert(*m_systemManager.activeSystem(), system);
+
+            m_theme.kill([&]() {
+                loadSubTheme(system);
+            });
         }
     });
 
     m_buttons["back"] = input::Button([&]() {
         if (m_systemManager.hasSelected()) {
             m_systemManager.unselect();
+
+            m_theme.kill([&]() {
+                m_theme.dispose();
+                loadMainTheme();
+            });
         }
     });
 }
@@ -148,4 +158,31 @@ void Engine::handleState()
     }
 }
 
+void Engine::loadMainTheme()
+{
+    m_theme.load("./data/theme.json", m_bgColor);
+    m_theme.loadSystemImages();
+
+    std::vector<filesystem::database::entity::TextureMetaInfo> collection;
+    filesystem::database::getGameSystemsMeta(collection);
+    m_theme.setDrawables(collection);
+    m_theme.setWheelIndex(m_mainWheelIndex);
+}
+
+void Engine::loadSubTheme(filesystem::database::entity::GameSystem &system)
+{
+    m_theme.dispose();
+    std::string path = arcade::settings::theme::themeFilePath(system.name());
+
+    if (!filesystem::file::exists(path)) {
+        m_debug.warn("system ", system.name(), " doesn't have a custom theme. using default theme");
+        path = arcade::settings::theme::mainThemeFilePath();
+    }
+
+    m_theme.load(path, m_bgColor);
+
+    std::vector<filesystem::database::entity::TextureMetaInfo> collection;
+    filesystem::database::getGamesMeta(system, collection);
+    m_theme.setDrawables(collection);
+}
 } // namespace graphics

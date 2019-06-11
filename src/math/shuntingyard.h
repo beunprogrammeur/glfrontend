@@ -24,16 +24,29 @@ private:
 
 
     bool getVariable(const std::string &name, float &value);
+
     static float operate(char op, float left, float right);
+
     bool isOperator(char op) const;
+
     int precedence(char op) const;
+
 public:
     Calculator();
 
     void setHundredPercent(float value);
-    void setHundredPercentByVariableName(const std::string& name);
+
+    void setHundredPercentByVariableName(const std::string &name);
+
     void setVariable(const std::string &name, float value);
+
     float calculate(const std::string &formula, float defaultValue = 0.0f);
+
+    inline void reset()
+    {
+        m_variables.clear();
+        m_hundredPercent = 100.0f;
+    }
 };
 
 

@@ -2,9 +2,11 @@
 #define SETTINGS_H
 
 #include <string>
+#include <filesystem/path.h>
 
 namespace arcade {
 namespace settings {
+
 void init();
 
 void save();
@@ -15,6 +17,9 @@ bool useColor();
 
 namespace program {
 std::string title();
+
+inline std::string dataDir()
+{ return "./data"; }
 } // namespace program
 
 namespace screen {
@@ -33,8 +38,15 @@ void height(int value);
 
 namespace gaming {
 std::string gameSystemsRootDir();
+
 std::string gameSystemImageName();
 } // namespace gaming
+
+namespace theme {
+inline std::string themeFileName();
+std::string mainThemeFilePath();
+std::string themeFilePath(std::string system);
+} // namespace theme
 
 namespace database {
 std::string path();

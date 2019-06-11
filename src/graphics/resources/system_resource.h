@@ -13,7 +13,7 @@ namespace resources {
 class SystemResource : public Resource
 {
 public:
-    explicit SystemResource(const std::string& name, Type type);
+    SystemResource(const std::string &name, Resource::Type type, graphics::drawing::Theme *parent);
 };
 
 } // namespace resources

@@ -3,6 +3,7 @@
         { "type": "texture", "name": "ball",     "path": "theme/ball.png"    },
         { "type": "texture", "name": "triangle", "path": "theme/triangle.png" },
         { "type": "texture", "name": "selection_backdrop", "path": "theme/selection_backdrop.png"},
+        { "type": "texture", "name": "cabinet", "path": "theme/cabinet.png"},
         { "type": "bgcolor", "name": "background"},
         { "type": "wheel", "name": "image_wheel"}
 
@@ -25,6 +26,10 @@
         {"name": "www", "resource": "image_wheel", "actions": [
             {"id": "scroll", "scroll_time":"1000"},
             {"id": "initial_state","size": ["wheel_backdrop.init.size.x - 20", "wheel_backdrop.init.size.y - 20"], "translate": ["wheel_backdrop.init.translate.x","wheel_backdrop.init.translate.y"], "displacement": ["0", "height+10"]}
+        ]},
+
+        {"name": "cab", "resource": "cabinet", "actions": [
+            {"id": "init", "size": ["50%", "100%"], "translate": ["width/2", "height/2"]}
         ]}
 
     ]

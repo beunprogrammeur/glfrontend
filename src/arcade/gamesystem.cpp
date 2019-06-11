@@ -11,6 +11,8 @@
 #include "filesystem/file.h"
 #include "filesystem/path.h"
 #include "filesystem/directory.h"
+#include "filesystem/database/database.h"
+
 namespace arcade
 {
 debug::Logger GameSystem::s_debug("gamesystem");
@@ -38,13 +40,14 @@ GameSystem::~GameSystem()
 void GameSystem::loadSystems(std::vector<GameSystem*>& systems)
 {
     auto root = arcade::settings::gaming::gameSystemsRootDir();
-    
-    std::vector<std::string> directories;
-    filesystem::directory::getSubDirs(arcade::settings::gaming::gameSystemsRootDir(), directories);
-    for(auto path : directories)
-    {
-        systems.push_back(new GameSystem(path));
-    }
+
+    filesystem::directory::getSubDirs(root, [&](const char* dir){
+        auto* system = new GameSystem(filesystem::path::concat(root, dir));
+
+        filesystem::database::update(*system);
+
+        systems.emplace_back(system);
+    });
 }
 
 void GameSystem::loadGames()

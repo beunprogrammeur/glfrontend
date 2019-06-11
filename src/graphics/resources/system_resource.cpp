@@ -4,7 +4,9 @@
 
 #include "system_resource.h"
 
-graphics::resources::SystemResource::SystemResource(const std::string &name, graphics::resources::Resource::Type type)
-        : Resource(name, type)
+graphics::resources::SystemResource::SystemResource(const std::string &name, graphics::resources::Resource::Type type,
+                                                    graphics::drawing::Theme *parent)
+        : Resource(name, type, parent)
 {
+
 }
