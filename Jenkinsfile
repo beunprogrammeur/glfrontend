@@ -4,8 +4,10 @@ pipeline {
     stage('build') {
       steps {
         echo 'this is a message'
-        sh '''pwd
-ls -a'''
+        sh '''rm -f build
+cmake build
+cd build
+make'''
       }
     }
 
