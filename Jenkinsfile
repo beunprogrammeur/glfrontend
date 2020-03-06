@@ -4,7 +4,8 @@ pipeline {
     stage('build') {
       steps {
         echo 'this is a message'
-        sh 'pwd'
+        sh '''pwd
+ls -a'''
       }
     }
 
